@@ -1,2 +1,2 @@
 # DaPycordTemplate
-Discord bot template using Pycord
+Template to make discord bots using Pycord
