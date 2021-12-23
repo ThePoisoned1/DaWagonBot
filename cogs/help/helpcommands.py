@@ -55,7 +55,7 @@ async def help(ctx, bot, botConf, module=None):
 
         # setting information about author
         emb.add_field(
-            name="About", value=f"Bot developed by {owner}, based on discord.py.\n")
+            name="About", value=f"Bot developed by {owner}, based on Pycord.\n")
         emb.set_footer(text=f"Bot is running in verison {version}")
 
     # block called when one cog-name is given
