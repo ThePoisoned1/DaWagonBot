@@ -5,17 +5,36 @@ import discord
 from discord.ext import commands
 
 # utils
-from utils import utils
+from utils import utils, databaseUtils
+
 # conf
 import configparser
 
+# cogs
+from cogs.errorhandler import errorhandlercog
+from cogs.help import helpcog
+from cogs.info import infocog
+
+# database initializer
+from database import startDatabase
+
 
 # dev/pro
-profile = 'dev'
+profile = 'pro'
 
-def addCogs(bot):
-    # bot.add_cog(Cog(bot,*))
-    pass
+
+def addCogs(bot, conf,con):
+    bot.add_cog(errorhandlercog.CommandErrorHandler(bot))
+    bot.add_cog(helpcog.HelpCog(bot, conf['bot']))
+    bot.add_cog(infocog.InfoCog(bot,con,eval(conf['auth_users']['team_chara_info'])))
+
+
+def connectDb(dbConf):
+    exists = os.path.isfile(dbConf['path'])
+    con = databaseUtils.connectToDb(dbConf['path'])
+    if not exists:
+        startDatabase.startDb(con)
+    return con
 
 
 def startBot(conf):
@@ -25,7 +44,7 @@ def startBot(conf):
         conf['bot']['activity_type'], conf['bot']['avtivity_msg'], url=conf['bot']['streaming_url'])
     status = utils.getBotStatus(conf['bot']['status'])
     bot = commands.Bot(
-        command_prefix=commands.when_mentioned_or(conf['bot']['prefix']), activity=activity, status=status, help_command=None, intents=intents,case_insensitive=True)
+        command_prefix=commands.when_mentioned_or(conf['bot']['prefix']), activity=activity, status=status, help_command=None, intents=intents, case_insensitive=True)
 
     @ bot.event
     async def on_ready():
@@ -41,8 +60,8 @@ def startBot(conf):
         # utils.addToLog(ctx.message.created_at, ctx.message.author,
         # ctx.message.author.id, ctx.guild, ctx.guild.id, ctx.message.content)
         return ';' not in ctx.message.content
-
-    addCogs(bot)
+    con = connectDb(conf['database'])
+    addCogs(bot, conf,con)
     # start the bot
     bot.run(conf['bot']['token'])
 

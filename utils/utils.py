@@ -1,3 +1,4 @@
+from discord import file
 from discord.errors import Forbidden
 import discord
 import asyncio
@@ -5,6 +6,14 @@ from datetime import datetime
 import os.path
 import csv
 import sys
+import re
+import cv2
+import requests
+import numpy as np
+from PIL import Image
+import io
+from pprint import pprint
+import struct
 
 
 async def send_embed(ctx, embed, view=None):
@@ -21,6 +30,11 @@ async def send_embed(ctx, embed, view=None):
         return msg
     except Forbidden:
         send_msg(ctx, view=view)
+
+
+async def send_img(ctx, fileArray: np.ndarray):
+    cv2.imwrite('file.png', cv2.cvtColor(fileArray, cv2.COLOR_RGB2BGR))
+    return await ctx.send(file=discord.File('file.png'))
 
 
 async def send_msg(ctx, msg=None, view=None):
@@ -88,7 +102,7 @@ async def elementsInPages(bot, ctx, elementEmbeds):
                     reaction.emoji) in msgReactions.keys()
                 and user.id != bot.user.id
                 and reaction.message.id == msg.id
-                and user.id == ctx.author.id 
+                and user.id == ctx.author.id
             )
         except asyncio.TimeoutError:
             embed = elements[msgReactions[emojistr]]
@@ -177,6 +191,7 @@ def parseTime(timeToParse: datetime):
 def getDatetimeFromParsedString(date: str):
     return datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
 
+
 def beautifyDate(datetimeToParse: datetime):
     return datetimeToParse.strftime('%H:%M - %a %d-%b-%Y')
 
@@ -244,3 +259,34 @@ def getDiscordColor(color: str):
         'purple': discord.Color.purple()
     }
     return colors.get(color.lower())
+
+
+def camel_case(s: str):
+    s = re.sub(r"(_|-)+", " ", s).title().replace(" ", "")
+    return ''.join([s[0].lower(), s[1:]])
+
+
+def hconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
+    h_min = min(im.shape[0] for im in im_list)
+    im_list_resize = [cv2.resize(im, (int(im.shape[1] * h_min / im.shape[0]), h_min), interpolation=interpolation)
+                      for im in im_list]
+    return cv2.hconcat(im_list_resize)
+
+
+def convert_string_to_bytes(string):
+    bytes = b''
+    print(string)
+    for i in string:
+        bytes += struct.pack("B", ord(i))
+    return bytes
+
+
+def downloadImgFromUrl(url):
+    print(url)
+    r = requests.get(url)
+    print(r)
+    if r.status_code == 200:
+        r.raw.decode_content = True
+        imgData = io.BytesIO(r.content)
+        img = Image.open(imgData)
+        return np.asarray(img)

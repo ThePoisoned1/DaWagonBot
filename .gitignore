@@ -1,14 +1,14 @@
 logs/
 *.db
 .vscode/
-#./conf
-#*conf
-
+./conf
+*conf
+*.sqlite3
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-
+*AuthedUsers.py
 # C extensions
 *.so
 
