@@ -4,6 +4,8 @@ logs/
 ./conf
 *conf
 *.sqlite3
+conf-pro.conf
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

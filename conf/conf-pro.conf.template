@@ -13,3 +13,7 @@ avtivity_msg = something
 #dnd/invisible/idle/online
 status = online
 streaming_url = https://youtu.be/dQw4w9WgXcQ
+
+[database]
+path = path/to/db
+backup_path = path/to/backup
