@@ -23,10 +23,10 @@ from database import startDatabase
 profile = 'pro'
 
 
-def addCogs(bot, conf,con):
+def addCogs(bot, conf, con):
     bot.add_cog(errorhandlercog.CommandErrorHandler(bot))
     bot.add_cog(helpcog.HelpCog(bot, conf['bot']))
-    bot.add_cog(infocog.InfoCog(bot,con,eval(conf['auth_users']['team_chara_info'])))
+    bot.add_cog(infocog.InfoCog(bot, con))
 
 
 def connectDb(dbConf):
@@ -61,7 +61,7 @@ def startBot(conf):
         # ctx.message.author.id, ctx.guild, ctx.guild.id, ctx.message.content)
         return ';' not in ctx.message.content
     con = connectDb(conf['database'])
-    addCogs(bot, conf,con)
+    addCogs(bot, conf, con)
     # start the bot
     bot.run(conf['bot']['token'])
 
