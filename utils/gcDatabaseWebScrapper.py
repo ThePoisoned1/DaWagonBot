@@ -61,7 +61,10 @@ def getSkillEffects(line):
         '>Evasion<': 'Evasion',
         '[h|H]eals HP': 'Heal',
         'Ultimate Move damage': 'Ultimate Move damage',
-        'Recovers HP': 'Recovers HP'
+        'Recovers HP': 'Recovers HP',
+        '[d|D]isables everything including Ultimate Moves except for Debuff Skills': 'Disables everything but Debuff Skills',
+        '[d|D]isables Rank 2 and above': 'Disables Rank 2+'
+
     }
     out = []
     effects = re.findall(regex, line)
@@ -108,13 +111,10 @@ def checkForSrSsr(allcharas):
     for chara in allcharas:
         name = chara.name[:-1]
         outChara = chara
-        if chara.name == 'gowther3':
-            outChara.rarity = 'SR'
         if name in moreThan3Charas:
             atributes = [
                 chara.attribute for chara in allcharas if chara.name[:-1] == name]
             if atributes.count(outChara.attribute) > 1 and outChara.rarity != 'SSR':
-                print(outChara.rarity, outChara.names[0])
                 outChara.names[0] = outChara.names[0][0] + \
                     outChara.rarity+outChara.names[0][1:]
 

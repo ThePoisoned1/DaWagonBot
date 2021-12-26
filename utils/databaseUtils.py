@@ -61,6 +61,12 @@ def select(con, tableName, values: list = ['*'], where: str = '1=1'):
     )
     return parseFetch(cursor)
 
+def delete(con,tableName,where):
+    cursor = con.cursor()
+    cursor.execute(
+        f"DELETE FROM {tableName} WHERE {where}"
+    )
+    con.commit()
 
 def customSelect(con, SQLsentence: str):
     cursor = con.cursor()
@@ -79,65 +85,6 @@ def printTable(con, tableName: str):
     cursor.execute(f'SELECT * from {tableName}')
     pprint(cursor.fetchall())
 
-
-def getCharaFromDb(con, charaId):
-    cursor = con.cursor()
-    cursor.execute('SELECT * from character where charaId = ?', [charaId])
-    return cursor.fetchone()
-
-
-def getBuffsFromIds(con, buffIds):
-    cursor = con.cursor()
-    aux = ' OR id = '.join([str(buffId)
-                           for buffId in buffIds if len(str(buffId)) > 0])
-    cursor.execute(f'SELECT * from buff where id = {aux}')
-    return parseFetch(cursor)
-
-
-def getWeaponFromId(con, weapId):
-    cursor = con.cursor()
-    cursor.execute('SELECT * from weapon where id = ?', [weapId])
-    return parseFetch(cursor)
-
-
-def getRarityFromId(con, rarityId):
-    cursor = con.cursor()
-    cursor.execute('SELECT * from rarity where id = ?', [rarityId])
-    return parseFetch(cursor)
-
-
-def getElementFromId(con, elemId):
-    cursor = con.cursor()
-    cursor.execute('SELECT * from element where id = ?', [elemId])
-    return parseFetch(cursor)
-
-
-def getCharaFromName(con, name):
-    cursor = con.cursor()
-    name = name.upper()
-    cursor.execute(
-        'SELECT * from character where (upper(name) like upper(?) or upper(name) like upper(?)) limit 1', [name, name+"%"])
-    return cursor.fetchone()
-
-
-def entryExists(con, disId, tourneyId):
-    cursor = con.cursor()
-    cursor.execute(
-        'SELECT * from scoreEntry where disId = ? and tourneyId = ?', (disId, tourneyId))
-    data = cursor.fetchone()
-    if data:
-        return True, data
-    return False, data
-
-
-def updateEntry(con, toUpdate: dict, disId, tourneyId):
-    cursor = con.cursor()
-    values = dictToSQL(toUpdate)
-    cursor.execute(
-        f"UPDATE scoreEntry SET {values} WHERE disId = ? and tourneyId = ?", (
-            disId, tourneyId)
-    )
-    con.commit()
 
 def customSQL(con,sql):
     cursor = con.cursor()

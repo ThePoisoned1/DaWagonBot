@@ -102,3 +102,10 @@ class Team():
     replacements: dict = field(default_factory=dict)
     picUrl: str = ''
     otherNames: list = field(default_factory=list)
+
+    def is_valid_team_positions(self, position):
+        return position in ['Offense', 'Defense']
+
+    @staticmethod
+    def get_valid_team_postions():
+        return ['Offense', 'Defense']

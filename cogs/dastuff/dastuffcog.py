@@ -13,7 +13,7 @@ class DaStuffCog(commands.Cog, name="DaStuff"):
     def __init__(self, bot, con, conf):
         self.bot = bot
         self.con = con
-        self.conf=conf
+        self.conf = conf
 
     @commands.command(name="shutdown", pass_context=True, description="Shuts down the bot")
     @commands.is_owner()
@@ -31,16 +31,17 @@ class DaStuffCog(commands.Cog, name="DaStuff"):
     @commands.command(name="backup", pass_context=True, description="Backs up the dbs")
     @commands.is_owner()
     async def backup(self, ctx):
-        fileFolder = self.conf['datatbase']['folder_path']
-        backupFolder = self.conf['datatbase']['backup_folder']
+        fileFolder = self.conf['database']['folder_path']
+        backupFolder = self.conf['database']['backup_folder']
+        if not os.path.isdir(backupFolder):
+            os.mkdir(backupFolder)
         for file in os.listdir(fileFolder):
             if file.split('.')[-1] == 'sqlite3':
                 fileName = file.split(
-                    '.')[0]+'_'+str(datetime.utcnow().strftime('%Y%m%d'))+'.sqlite3'
+                    '.')[0]+'_'+str(datetime.utcnow().strftime('%Y%m%d_%H%M%S'))+'.sqlite3'
                 shutil.copy(os.path.join(fileFolder, file),
                             os.path.join(backupFolder, fileName))
         await utils.send_msg(ctx, msg='Backed up')
-
 
 
 def setup(bot, con):

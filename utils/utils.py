@@ -32,9 +32,12 @@ async def send_embed(ctx, embed, view=None):
         send_msg(ctx, view=view)
 
 
-async def send_img(ctx, fileArray: np.ndarray):
+async def send_img(ctx, fileArray: np.ndarray, channel=None):
     cv2.imwrite('file.png', cv2.cvtColor(fileArray, cv2.COLOR_RGB2BGR))
-    return await ctx.send(file=discord.File('file.png'))
+    if channel:
+        return await channel.send(file=discord.File('file.png'))
+    else:
+        return await ctx.send(file=discord.File('file.png'))
 
 
 async def send_msg(ctx, msg=None, view=None):
@@ -44,6 +47,10 @@ async def send_msg(ctx, msg=None, view=None):
         await ctx.send(msg, view=view)
     except Forbidden:
         await ctx.author.send(msg)
+
+
+async def send_cancel_msg(ctx, msg='Operaction canceled'):
+    await send_msg(ctx, msg=msg)
 
 
 def errorMsg():
@@ -59,6 +66,11 @@ def errorEmbed(title):
 def successEmbed(title):
     return discord.Embed(
         title=title, color=0x00ff00)
+
+
+def info_embed(title):
+    return discord.Embed(
+        title=title, color=discord.Color.blue())
 
 
 def removeMatches(theList, toDelete):
@@ -282,9 +294,7 @@ def convert_string_to_bytes(string):
 
 
 def downloadImgFromUrl(url):
-    print(url)
     r = requests.get(url)
-    print(r)
     if r.status_code == 200:
         r.raw.decode_content = True
         imgData = io.BytesIO(r.content)

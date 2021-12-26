@@ -84,7 +84,7 @@ def insertGwTeams(con):
                         'drole2', 'sigurd1', 'melascula2']
     amTeam.position = ['Offense']
     amTeam.replacements = {'sigurd1': ['gloxinia2']}
-    amTeam.picUrl = 'https://cdn.discordapp.com/attachments/923735234091036722/924081486255255552/unknown.png'
+    amTeam.picUrl = 'https://cdn.discordapp.com/attachments/923735234091036722/924456839066812426/file.png'
     teams.append(amTeam)
     # Glue
     glue = Team()
@@ -94,7 +94,7 @@ def insertGwTeams(con):
                       'goddess_elizabeth1', 'gowther4', 'king1']
     glue.position = ['Offense']
     glue.replacements = {}
-    glue.picUrl = 'https://cdn.discordapp.com/attachments/923735234091036722/924081349147627530/unknown.png'
+    glue.picUrl = 'https://cdn.discordapp.com/attachments/923735234091036722/924457591483015198/file.png'
     teams.append(glue)
     # AA
     archangels = Team(name='Archangels')
@@ -104,7 +104,7 @@ def insertGwTeams(con):
     archangels.position = ['Offense', 'Defense']
     archangels.replacements = {'elizabeth_hawk4': [
         'goddess_elizabeth1', 'elizabeth2', 'elizabeth_hawk3']}
-    archangels.picUrl = 'https://cdn.discordapp.com/attachments/923735234091036722/924080911845302312/unknown.png'
+    archangels.picUrl = 'https://cdn.discordapp.com/attachments/923735234091036722/924458222599946270/file.png'
     teams.append(archangels)
     # Kyori
     kyori = Team(name='Kyori')
@@ -115,7 +115,7 @@ def insertGwTeams(con):
         'fraudrin1': ['athena1', 'drole1'],
         'yagami1': ['executioner_zeldris1', 'eastin2']
     }
-    kyori.picUrl = 'https://cdn.discordapp.com/attachments/923735234091036722/924080469933428786/unknown.png'
+    kyori.picUrl = 'https://cdn.discordapp.com/attachments/923735234091036722/924458956829655090/file.png'
     teams.append(kyori)
     cursor = con.cursor()
     for team in teams:
