@@ -1,12 +1,10 @@
-from re import search
 from discord.ext import commands
-from numpy import mat
 from . import infocogconf, infocommands
 from utils import utils
 from pprint import pprint
 
 
-class InfoCog(commands.Cog, name="GwTeams"):
+class InfoCog(commands.Cog, name="CharaAndTeams"):
     """
     Character and Teams info related commands
     """
@@ -21,6 +19,8 @@ class InfoCog(commands.Cog, name="GwTeams"):
         descriptions['teamInfo'] = 'Shows the info of the specified team'
         descriptions['charaInfo'] = 'Shows the info of the specified chara'
         descriptions['listTeams'] = 'Shows a list with all the registered teams'
+        descriptions['addteam'] = 'Adds a team to the database'
+        descriptions['editteam'] = 'Edits a team in the database'
         return descriptions
 
     descriptions = getDescriptions()
@@ -80,17 +80,9 @@ class InfoCog(commands.Cog, name="GwTeams"):
     async def listTeams(self, ctx):
         await utils.send_embed(ctx, infocommands.allTeamsEmbed(self.con))
 
-    @commands.command(name="concatCharaImg", aliases=['concatImg'], pass_context=True, description=descriptions.get('listTeams'))
-    @commands.is_owner()
-    async def concatCharaImg(self, ctx, *charas):
-        charas = (' '.join(charas)).split(',')
-        charaObjs = [infocommands.characterSearch(
-            self.con, charaName)[0] for charaName in charas]
-        img = infocommands.concatCharaPics(charaObjs)
-        img = await utils.send_img(ctx, img)
-        await utils.send_msg(ctx, img.attachments[0].url)
 
-    @commands.command(name="addTeam", pass_context=True, description=descriptions.get('listTeams'))
+
+    @commands.command(name="addTeam", pass_context=True, description=descriptions.get('addteam'))
     @commands.check(userInAuthPpl)
     async def addTeam(self, ctx):
         team = await infocommands.create_team(ctx, self.bot, self.con, self.picChannelId)
@@ -99,7 +91,7 @@ class InfoCog(commands.Cog, name="GwTeams"):
         await utils.send_embed(ctx, infocommands.getTeamEmbed(self.con, team))
         infocommands.add_team_to_db(self.con, team)
 
-    @commands.command(name="", pass_context=True, brief="<teamName>", description=descriptions.get('listTeams'))
+    @commands.command(name="", pass_context=True, brief="<teamName>", description=descriptions.get('editteam'))
     @commands.check(userInAuthPpl)
     async def editTeam(self, ctx, *teamName):
         team = await self.teamInfo(ctx, ' '.join(teamName))

@@ -26,9 +26,9 @@ profile = 'pro'
 
 def addCogs(bot, conf, con):
     bot.add_cog(errorhandlercog.CommandErrorHandler(bot))
-    bot.add_cog(helpcog.HelpCog(bot, conf['bot']))
     bot.add_cog(infocog.InfoCog(bot, con, conf['pictures']['channel_id']))
     bot.add_cog(dastuffcog.DaStuffCog(bot, con, conf))
+    bot.add_cog(helpcog.HelpCog(bot, conf['bot']))
 
 
 def connectDb(dbConf):

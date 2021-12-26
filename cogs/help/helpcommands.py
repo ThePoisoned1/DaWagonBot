@@ -7,7 +7,7 @@ async def invite(botId):
     return discord.utils.oauth_url(str(botId), permissions=discord.Permissions(2151017536))
 
 
-async def help(ctx, bot, botConf, module=None):
+async def help(ctx, bot: discord.bot, botConf, module=None):
     """Shows all modules of the bot"""
     prefix = botConf['prefix']
     version = botConf['version']
@@ -71,7 +71,7 @@ async def help(ctx, bot, botConf, module=None):
                                     color=discord.Color.green())
 
                 # getting commands from cog
-                for command in bot.get_cog(cog).get_commands():
+                for command in bot.get_cog(cog).walk_commands():
                     # if cog is not hidden
                     if not command.hidden:
                         aliases = command.aliases
