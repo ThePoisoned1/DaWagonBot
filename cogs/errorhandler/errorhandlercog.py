@@ -1,7 +1,9 @@
+from pprint import pprint
 import discord
 import traceback
 import sys
 from discord.ext import commands
+from discord.ext.commands import errors
 
 
 class CommandErrorHandler(commands.Cog):
@@ -20,6 +22,8 @@ class CommandErrorHandler(commands.Cog):
             The Exception raised.
         """
         print(type(error))
+        print(isinstance(error,commands.errors.MissingAnyRole))
+        pprint(error)
         if hasattr(ctx.command, 'on_error'):
             return
 
@@ -58,6 +62,10 @@ class CommandErrorHandler(commands.Cog):
         elif isinstance(error, commands.CheckFailure):
             if "global" in str(error):
                 await ctx.send("Commands don't allow the usage of ';' ")
+            elif isinstance(error,commands.errors.MissingAnyRole):
+                await ctx.send('You don\'t have any of the required roles to use this')
+            else:
+                await ctx.send('You didn\'t pass the test to use this')
         else:
             print('Ignoring exception in command {}:'.format(
                 ctx.command), file=sys.stderr)

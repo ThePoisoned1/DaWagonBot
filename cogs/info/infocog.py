@@ -29,6 +29,7 @@ class InfoCog(commands.Cog, name="CharaAndTeams"):
         return ctx.author.id in infocogconf.authedUsers.values()
 
     @commands.command(name="teamInfo", aliases=['tinfo'], pass_context=True, brief="<teamName>", description=descriptions.get('teamInfo'))
+    @commands.check_any(commands.is_owner(), commands.has_any_role(infocogconf.authedRoles.values()))
     async def teamInfo(self, ctx, *teamName):
         teamName = ' '.join(teamName)
         team = None
@@ -55,6 +56,7 @@ class InfoCog(commands.Cog, name="CharaAndTeams"):
         return team
 
     @commands.command(name="charaInfo", aliases=['cinfo'], pass_context=True, brief="<unitname>", description=descriptions.get('charaInfo'))
+    @commands.check_any(commands.is_owner(), commands.has_any_role(infocogconf.authedRoles.values()))
     async def charaInfo(self, ctx, charaName):
         matches = infocommands.characterSearch(self.con, charaName)
         if len(matches) == 1:
@@ -77,10 +79,9 @@ class InfoCog(commands.Cog, name="CharaAndTeams"):
         await utils.send_embed(ctx, embed)
 
     @commands.command(name="listTeams", aliases=['teams'], pass_context=True, description=descriptions.get('listTeams'))
+    @commands.check_any(commands.is_owner(), commands.has_any_role(infocogconf.authedRoles.values()))
     async def listTeams(self, ctx):
         await utils.send_embed(ctx, infocommands.allTeamsEmbed(self.con))
-
-
 
     @commands.command(name="addTeam", pass_context=True, description=descriptions.get('addteam'))
     @commands.check(userInAuthPpl)
@@ -103,6 +104,16 @@ class InfoCog(commands.Cog, name="CharaAndTeams"):
             embed = infocommands.getTeamEmbed(self.con, team)
             await utils.send_embed(ctx, embed)
             infocommands.edit_team_in_db(self.con, team)
+
+    @commands.command(name="concatCharaImg", aliases=['concatImg'], pass_context=True, description=descriptions.get('listTeams'))
+    @commands.is_owner()
+    async def concatCharaImg(self, ctx, *charas):
+        charas = (' '.join(charas)).split(',')
+        charaObjs = [infocommands.characterSearch(
+            self.con, charaName)[0] for charaName in charas]
+        img = infocommands.concatCharaPics(charaObjs)
+        img = await utils.send_img(ctx, img)
+        await utils.send_msg(ctx, img.attachments[0].url)
 
 
 def setup(bot):
