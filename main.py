@@ -13,15 +13,16 @@ import configparser
 # cogs
 from cogs.errorhandler import errorhandlercog
 from cogs.help import helpcog
-from cogs.info import infocog, infocogconf
+from cogs.info import infocog
 from cogs.dastuff import dastuffcog
 
 # database initializer
-from database import startDatabase
+from database import startDatabase, customInteractions
 
 
 # dev/pro
 profile = 'pro'
+updateCharas = False
 
 
 def addCogs(bot, conf, con):
@@ -50,6 +51,8 @@ def startBot(conf):
 
     @ bot.event
     async def on_ready():
+        print(bot.get_user(237974872599298049))
+        print(bot.get_user(237974872599298049))
         print('------')
         print('Logged in as')
         print(bot.user.name + "#" + bot.user.discriminator)
@@ -63,6 +66,9 @@ def startBot(conf):
         # ctx.message.author.id, ctx.guild, ctx.guild.id, ctx.message.content)
         return ';' not in ctx.message.content
     con = connectDb(conf['database'])
+    if updateCharas:
+        customInteractions.run_chara_update(
+            con, conf['database']['chara_base_url'])
     addCogs(bot, conf, con)
     # start the bot
     bot.run(conf['bot']['token'])

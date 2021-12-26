@@ -51,7 +51,7 @@ def getSkillMultiplier(line):
     return result.string
 
 
-def getSkillEffects(line):
+def getSkillEffects(line, rawLine):
     regex = '<b style="color:#00d4fe">[A-Za-z ()-]+</b>'
     extraRejexes = {
         'Skill Ranks': 'Skill Rank',
@@ -79,14 +79,14 @@ def getSkillEffects(line):
                 toAdd = 'Shield'
             out.append(toAdd)
     for extraRegex, val in extraRejexes.items():
-        if re.findall(extraRegex, line):
+        if len(re.findall(extraRegex, rawLine)) > 0:
             out.append(val)
     return out
 
 
 def incOrDec(line):
-    increaseRejex = '[I|i]ncrease'
-    decreaseRejex = '[D|d]ecrease'
+    increaseRejex = '[I|i]ncreas'
+    decreaseRejex = '[D|d]ecreas'
     out = []
     if re.findall(increaseRejex, line):
         out.append('Increases')
@@ -122,9 +122,35 @@ def checkForSrSsr(allcharas):
     return out
 
 
+def get_skills_ult(result, pos):
+    skills = []
+    for skill in result[pos:pos+2]:
+        skillData = skill.find_all('td')
+        charaSkill = Skill()
+        charaSkill.effects = getSkillEffects(
+            str(skillData[7]), skillData[7].text)
+        charaSkill.isAoE = isAoE(skillData[7].text)
+        charaSkill.skillType = skillData[8].text
+        charaSkill.increasesDecresases = incOrDec(skillData[7].text)
+        skills.append(charaSkill)
+    pos += 2
+    # ultimate
+    ultData = result[pos].find_all('td')
+    charaSkill = Skill()
+    charaSkill.effects = getSkillEffects(str(ultData[1]), ultData[1].text)
+    if len(ultData) > 2:
+        charaSkill.effects += getSkillEffects(str(ultData[2]), ultData[2].text)
+    charaSkill.isAoE = isAoE(ultData[1].text)
+    charaSkill.skillType = 'Ultimate'
+    charaSkill.increasesDecresases = incOrDec(ultData[1].text)
+    skills.append(charaSkill)
+    return skills, pos
+
+
 def getCharaDataFromUrl(url):
     baseUrl = '/'.join(url.split('/')[:3])
     page = getHTMLFromUrl(url)
+    print(url)
     chara = Character()
     # name
     chara.name = ''.join(url.split('/')[-2:])
@@ -147,33 +173,28 @@ def getCharaDataFromUrl(url):
     fName = utils.camel_case(f'{color[0].lower()} {chara.name[:-1]}')
     chara.names.append(fName)
     # skill effects
-    print(url)
+
     pos += 1
     if any(header.text == 'Associated with' for header in page.find_all("h2", class_="whitetext")):
         pos += 1
-    for skill in result[pos:pos+2]:
-        skillData = skill.find_all('td')
-        charaSkill = Skill()
-        charaSkill.effects = getSkillEffects(str(skillData[7]))
-        charaSkill.isAoE = isAoE(skillData[7].text)
-        charaSkill.skillType = skillData[8].text
-        charaSkill.increasesDecresases = incOrDec(skillData[7].text)
-        chara.skills.append(charaSkill)
-    pos += 2
-    # ultimate
-    ultData = result[pos].find_all('td')
-    charaSkill = Skill()
-    charaSkill.effects = getSkillEffects(
-        str(ultData[1]))+getSkillEffects(str(ultData[2]))
-    charaSkill.isAoE = isAoE(ultData[1].text)
-    charaSkill.skillType = 'Ultimate'
-    charaSkill.increasesDecresases = incOrDec(ultData[1].text)
-    chara.skills.append(charaSkill)
+    chara.skills, pos = get_skills_ult(result, pos)
+    # Transforming unit
     pos += 1
+    transforming = False
+    if 'Transforms' in chara.skills[-1].effects:
+        transforming = True
+        moreSkills, pos = get_skills_ult(result, pos)
+        chara.skills += moreSkills
+        pos += 1
     # pasive
     pasiveData = result[pos].find_all('td')
     chara.passive = pasiveData[0].text
     pos += 1
+    if transforming:
+        pasiveData = result[pos].find_all('td')
+        chara.passive += '\n------------------\n'
+        chara.passive += pasiveData[0].text
+        pos += 1
     # holy relic
     if any(header.text == 'Holy Relic' for header in page.find_all("h2", class_="whitetext")):
         weirdosRejexes = ['^merlin\d$', '^slater\d$', '^roxy\d$']

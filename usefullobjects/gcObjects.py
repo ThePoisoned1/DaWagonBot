@@ -86,10 +86,11 @@ class Skill():
         skillDict = eval(skillData)
         skill = Skill()
         skill.skillType = skillDict.get('skillType')
-        skill.effects = skillDict.get('effects').split(',')
+        skill.effects = skillDict.get('effects').split(',')if len(
+            str(skillDict.get('effects'))) > 0 else []
         skill.isAoE = skillDict.get('isAoE') == 'True'
         skill.increasesDecresases = skillDict.get(
-            'increasesDecresases').split(',')
+            'increasesDecresases').split(',') if len(str(skillDict.get('increasesDecresases'))) > 5 else []
         return skill
 
 

@@ -4,15 +4,16 @@ from utils import utils
 from pprint import pprint
 
 
-class InfoCog(commands.Cog, name="CharaAndTeams"):
+class InfoCog(commands.Cog, name="GcInfo"):
     """
-    Character and Teams info related commands
+    Info about characters and teams in 7DSGC
     """
 
     def __init__(self, bot, con, picChanelId):
         self.bot = bot
         self.con = con
         self.picChannelId = int(picChanelId)
+        print(list(infocogconf.authedRoles.values()))
 
     def getDescriptions():
         descriptions = {}
@@ -29,16 +30,19 @@ class InfoCog(commands.Cog, name="CharaAndTeams"):
         return ctx.author.id in infocogconf.authedUsers.values()
 
     @commands.command(name="teamInfo", aliases=['tinfo'], pass_context=True, brief="<teamName>", description=descriptions.get('teamInfo'))
-    @commands.check_any(commands.is_owner(), commands.has_any_role(infocogconf.authedRoles.values()))
+    @commands.check_any(commands.is_owner(), commands.has_any_role(*infocogconf.authedRoles.values()))
     async def teamInfo(self, ctx, *teamName):
         teamName = ' '.join(teamName)
         team = None
         matches = infocommands.teamSearch(self.con, teamName)
+        print(len(matches))
         if len(matches) == 1:
             embed = infocommands.getTeamEmbed(self.con, matches[0])
             team = matches[0]
         elif len(matches) < 1:
             embed = utils.errorEmbed('No team found')
+        elif len(matches) > 10:
+            embed = utils.errorEmbed('Too much results for that bro')
         else:
             await utils.send_embed(ctx, infocommands.teamSearchResultEmbed(matches, teamName))
             msg = await utils.getMsgFromUser(ctx, self.bot)
@@ -56,13 +60,18 @@ class InfoCog(commands.Cog, name="CharaAndTeams"):
         return team
 
     @commands.command(name="charaInfo", aliases=['cinfo'], pass_context=True, brief="<unitname>", description=descriptions.get('charaInfo'))
-    @commands.check_any(commands.is_owner(), commands.has_any_role(infocogconf.authedRoles.values()))
+    @commands.check_any(commands.is_owner(), commands.has_any_role(*infocogconf.authedRoles.values()))
     async def charaInfo(self, ctx, charaName):
         matches = infocommands.characterSearch(self.con, charaName)
+        team = None
         if len(matches) == 1:
             embed = infocommands.getEmbedFromChara(self.con, matches[0])
+            team = matches[0]
         elif len(matches) < 1:
             embed = utils.errorEmbed('No character found')
+        elif len(matches) > 20:
+            print(len(matches))
+            embed = utils.errorEmbed('Too much results for that bro')
         else:
             await utils.send_embed(ctx, infocommands.searchResultEmbed(matches, charaName))
             msg = await utils.getMsgFromUser(ctx, self.bot)
@@ -71,15 +80,16 @@ class InfoCog(commands.Cog, name="CharaAndTeams"):
                 return
             chara = infocommands.characterSearch(self.con, msg.content)
             if chara:
-                chara = chara[0]
+                team = chara[0]
             else:
                 await utils.errorEmbed('No character found')
                 return
-            embed = infocommands.getEmbedFromChara(self.con, chara)
+            embed = infocommands.getEmbedFromChara(self.con, team)
         await utils.send_embed(ctx, embed)
+        return team
 
     @commands.command(name="listTeams", aliases=['teams'], pass_context=True, description=descriptions.get('listTeams'))
-    @commands.check_any(commands.is_owner(), commands.has_any_role(infocogconf.authedRoles.values()))
+    @commands.check_any(commands.is_owner(), commands.has_any_role(*infocogconf.authedRoles.values()))
     async def listTeams(self, ctx):
         await utils.send_embed(ctx, infocommands.allTeamsEmbed(self.con))
 
@@ -90,9 +100,9 @@ class InfoCog(commands.Cog, name="CharaAndTeams"):
         if not team:
             return
         await utils.send_embed(ctx, infocommands.getTeamEmbed(self.con, team))
-        infocommands.add_team_to_db(self.con, team)
+        #infocommands.add_team_to_db(self.con, team)
 
-    @commands.command(name="", pass_context=True, brief="<teamName>", description=descriptions.get('editteam'))
+    @commands.command(name="editTeam", pass_context=True, brief="<teamName>", description=descriptions.get('editteam'))
     @commands.check(userInAuthPpl)
     async def editTeam(self, ctx, *teamName):
         team = await self.teamInfo(ctx, ' '.join(teamName))
@@ -105,7 +115,16 @@ class InfoCog(commands.Cog, name="CharaAndTeams"):
             await utils.send_embed(ctx, embed)
             infocommands.edit_team_in_db(self.con, team)
 
-    @commands.command(name="concatCharaImg", aliases=['concatImg'], pass_context=True, description=descriptions.get('listTeams'))
+    @commands.command(name="addName", pass_context=True, brief="<targetChara>", description=descriptions.get('editteam'))
+    @commands.check(userInAuthPpl)
+    async def addName(self, ctx, targetChara):
+        chara = await self.charaInfo(ctx, targetChara)
+        if not chara:
+            return
+        newCharaName = await infocommands.get_new_chara_name(ctx, self.bot, self.con, chara)
+        infocommands.edit_chara_names(self.con, chara, newCharaName)
+
+    @commands.command(name="concatCharaImg", aliases=['concatImg'], pass_context=True, description=descriptions.get('listTeams'), hidden=True)
     @commands.is_owner()
     async def concatCharaImg(self, ctx, *charas):
         charas = (' '.join(charas)).split(',')
@@ -113,7 +132,7 @@ class InfoCog(commands.Cog, name="CharaAndTeams"):
             self.con, charaName)[0] for charaName in charas]
         img = infocommands.concatCharaPics(charaObjs)
         img = await utils.send_img(ctx, img)
-        await utils.send_msg(ctx, img.attachments[0].url)
+        # await utils.send_msg(ctx, img.attachments[0].url)
 
 
 def setup(bot):

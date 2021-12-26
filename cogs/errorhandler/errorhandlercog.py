@@ -21,9 +21,6 @@ class CommandErrorHandler(commands.Cog):
         error: commands.CommandError
             The Exception raised.
         """
-        print(type(error))
-        print(isinstance(error,commands.errors.MissingAnyRole))
-        pprint(error)
         if hasattr(ctx.command, 'on_error'):
             return
 
@@ -58,7 +55,7 @@ class CommandErrorHandler(commands.Cog):
             await ctx.send("This command is restricted to the owner")
 
         elif isinstance(error, commands.CheckAnyFailure):
-            await ctx.send(error.errors[0])
+            await ctx.send('You didn\'t pass the test to use this')
         elif isinstance(error, commands.CheckFailure):
             if "global" in str(error):
                 await ctx.send("Commands don't allow the usage of ';' ")

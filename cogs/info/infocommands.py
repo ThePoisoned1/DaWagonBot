@@ -174,6 +174,17 @@ def team_name_is_unique(con, teamName):
                     for team in buffer['teams']])
 
 
+def chara_name_is_unique(con, charaName):
+    if not buffer.get('charas'):
+        updateBuffer(con)
+    charaName = charaName.strip().lower()
+    return not any([chara.name.lower() == charaName
+                    or any([extraName.lower() == charaName for extraName in chara.names])
+                    or chara.customName.lower() == charaName
+                    or chara.unitName.lower() == charaName
+                    for chara in buffer['charas']])
+
+
 async def get_team_name(ctx, bot, con, edit=False, origName=None):
     await utils.send_embed(ctx, utils.info_embed('Enter the team name'))
     acceptedName = False
@@ -363,6 +374,32 @@ async def edit_team(ctx, bot, con, picChannelId, team):
     pic = await utils.send_img(ctx, teamPic, channel=outputChannel)
     team.picUrl = pic.attachments[0].url
     return team
+
+async def condition_accepted(ctx,bot,msg,options=['Yes','No']):
+    await utils.send_embed
+
+async def get_new_chara_name(ctx, bot, con, chara):
+    await utils.send_embed(ctx, utils.info_embed(f'Trying to add a new name to {chara.name}. Adding the element before it is recommended (gFestGowther can be found searching festgowther)'))
+    nameIsAccepted = False
+    name = None
+    while not nameIsAccepted:
+        await utils.send_msg(ctx, 'Enter the new name')
+        name = await utils.getMsgFromUser(ctx, bot)
+        if not name or utils.cancelChecker(name.content.strip()):
+            await utils.send_cancel_msg(ctx)
+            return
+        name = name.content.strip()
+        nameIsAccepted = chara_name_is_unique(con, name)
+        if not nameIsAccepted:
+            await utils.send_embed(ctx, utils.errorEmbed('The name already exists. You can cancel the procedure with "cancel"'))
+    return name
+
+
+def edit_chara_names(con, chara, newName):
+    newNames = chara.names
+    newNames.append(newName)
+    customInteractions.update_names_on_chara(con, chara.name, newNames)
+    updateBuffer(con)
 
 
 def add_team_to_db(con, team):
