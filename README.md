@@ -1,4 +1,2 @@
-# DaPycordTemplate
-Template to make discord bots using Pycord
-
-Check the gitignore to avoid uploading the bot conf and any other sensitive data
+# DaWagon
+Source code for the bot I created for my boys in the SpeedWagon 7dsgc guild
