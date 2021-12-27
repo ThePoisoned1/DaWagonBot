@@ -489,8 +489,8 @@ async def get_gear_rolls(ctx, bot, pieces):
             rolls = await get_number_of_rolls(ctx, bot, gearRolls)
             if not rolls:
                 return
-            if not sum([roll for roll in rolls.values()])==10:
-                await utils.send_msg(ctx,msg='The total rolls for the substats must be 10, try again')
+            if not sum([roll for roll in rolls.values()]) == 10:
+                await utils.send_msg(ctx, msg='The total rolls for the substats must be 10, try again')
                 continue
             gearRolls = [f'{roll}({num})' for roll, num in rolls.items()]
         acceptedRolls = True
