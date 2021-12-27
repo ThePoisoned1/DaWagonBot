@@ -54,17 +54,18 @@ def getSkillMultiplier(line):
 def getSkillEffects(line, rawLine):
     regex = '<b style="color:#00d4fe">[A-Za-z ()-]+</b>'
     extraRejexes = {
-        'Skill Ranks': 'Skill Rank',
         'of diminished HP': 'Restores dimished HP',
-        'Max HP by': 'HP',
         '[d|D]epletes Ultimate Move Gauge': 'Depletes orbs (end of turn)',
         '>Evasion<': 'Evasion',
         '[h|H]eals HP': 'Heal',
-        'Ultimate Move damage': 'Ultimate Move damage',
         'Recovers HP': 'Recovers HP',
         '[d|D]isables everything including Ultimate Moves except for Debuff Skills': 'Disables everything but Debuff Skills',
         '[d|D]isables Rank 2 and above': 'Disables Rank 2+'
-
+    }
+    incDecRejexes = {
+        'Skill Ranks': 'Skill Rank',
+        'Max HP by': 'HP',
+        'Ultimate Move damage': 'Ultimate Move damage'
     }
     out = []
     effects = re.findall(regex, line)
@@ -81,6 +82,9 @@ def getSkillEffects(line, rawLine):
     for extraRegex, val in extraRejexes.items():
         if len(re.findall(extraRegex, rawLine)) > 0:
             out.append(val)
+    for incDecRejexe, val in incDecRejexes.items():
+        if len(re.findall(incDecRejexe, rawLine)) > 0:
+            out.insert(0, val)
     return out
 
 

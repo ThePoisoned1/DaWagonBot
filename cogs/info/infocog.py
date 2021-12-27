@@ -13,7 +13,6 @@ class InfoCog(commands.Cog, name="GcInfo"):
         self.bot = bot
         self.con = con
         self.picChannelId = int(picChanelId)
-        print(list(infocogconf.authedRoles.values()))
 
     def getDescriptions():
         descriptions = {}
@@ -22,6 +21,8 @@ class InfoCog(commands.Cog, name="GcInfo"):
         descriptions['listTeams'] = 'Shows a list with all the registered teams'
         descriptions['addteam'] = 'Adds a team to the database'
         descriptions['editteam'] = 'Edits a team in the database'
+        descriptions['addName'] = 'Adds a name to the AKA section of the character'
+        descriptions['addGear'] = 'Adds a Gear Set to a characer'
         return descriptions
 
     descriptions = getDescriptions()
@@ -35,7 +36,6 @@ class InfoCog(commands.Cog, name="GcInfo"):
         teamName = ' '.join(teamName)
         team = None
         matches = infocommands.teamSearch(self.con, teamName)
-        print(len(matches))
         if len(matches) == 1:
             embed = infocommands.getTeamEmbed(self.con, matches[0])
             team = matches[0]
@@ -70,7 +70,6 @@ class InfoCog(commands.Cog, name="GcInfo"):
         elif len(matches) < 1:
             embed = utils.errorEmbed('No character found')
         elif len(matches) > 20:
-            print(len(matches))
             embed = utils.errorEmbed('Too much results for that bro')
         else:
             await utils.send_embed(ctx, infocommands.searchResultEmbed(matches, charaName))
@@ -106,7 +105,6 @@ class InfoCog(commands.Cog, name="GcInfo"):
     @commands.check(userInAuthPpl)
     async def editTeam(self, ctx, *teamName):
         team = await self.teamInfo(ctx, ' '.join(teamName))
-        pprint(team)
         if not team:
             return
         team = await infocommands.edit_team(ctx, self.bot, self.con, self.picChannelId, team)
@@ -115,7 +113,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
             await utils.send_embed(ctx, embed)
             infocommands.edit_team_in_db(self.con, team)
 
-    @commands.command(name="addName", pass_context=True, brief="<targetChara>", description=descriptions.get('editteam'))
+    @commands.command(name="addName", pass_context=True, brief="<targetChara>", description=descriptions.get('addName'))
     @commands.check(userInAuthPpl)
     async def addName(self, ctx, targetChara):
         chara = await self.charaInfo(ctx, targetChara)
@@ -123,6 +121,17 @@ class InfoCog(commands.Cog, name="GcInfo"):
             return
         newCharaName = await infocommands.get_new_chara_name(ctx, self.bot, self.con, chara)
         infocommands.edit_chara_names(self.con, chara, newCharaName)
+        await utils.send_embed(ctx,utils.successEmbed('Name Added'))
+
+    @commands.command(name="addGear", pass_context=True, brief="<targetChara>", description=descriptions.get('addGear'))
+    @commands.check(userInAuthPpl)
+    async def addGear(self, ctx, targetChara):
+        chara = await self.charaInfo(ctx, targetChara)
+        if not chara:
+            return
+        gear = await infocommands.create_gear(ctx, self.bot, chara)
+        infocommands.edit_chara_gears(self.con, chara, gear)
+        await utils.send_embed(ctx,utils.successEmbed('Gear Added'))
 
     @commands.command(name="concatCharaImg", aliases=['concatImg'], pass_context=True, description=descriptions.get('listTeams'), hidden=True)
     @commands.is_owner()

@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from os import stat
 
 
 @dataclass
@@ -14,10 +15,61 @@ class GearSet():
 
     def getGearData(self):
         out = 'Set => '
-        out += '/'.join(self.bonus) if len(self.bonus) > 0 else 'Not set\n'
-        out += 'Substats => '
+        out += '/'.join(self.bonus) if len(self.bonus) > 0 else 'Not set'
+        out += '\nSubstats => '
         out += ', '.join(self.rolls) if len(self.rolls) > 0 else 'Not set'
         return out
+
+    @staticmethod
+    def get_bonus_weights():
+        return {
+            'Attack': 4,
+            'Defense': 2,
+            'Hp': 4,
+            'Crit Chance': 4,
+            'Crit Resistance': 2,
+            'Recovery Rate': 2,
+            'Crit Damage': 2,
+            'Crit Defense': 2,
+            'Lifesteal': 2
+        }
+
+    @staticmethod
+    def get_bonuses():
+        return GearSet.get_bonus_weights().keys()
+
+    @staticmethod
+    def get_rolls():
+        return {
+            'Top': ['Pierce Rate', 'Crit Chance', 'Crit Damage', 'Attack'],
+            'Mid': ['Defense', 'Resistance', 'Crit Resistance', 'Crit Defense'],
+            'Bottom': ['HP', 'Regeneration Rate', 'Recovery Rate', 'Lifesteal']
+        }
+
+    @staticmethod
+    def rolls_per_category():
+        return 10
+
+    @staticmethod
+    def bonus_total_weight():
+        return 6
+
+    @staticmethod
+    def get_default_rolls():
+        return ['Attack', 'Defense', 'Hp']
+
+    @staticmethod
+    def get_default_gears():
+        return{
+            'HP/DEF': GearSet(bonus=['Hp', 'Defense'], rolls=GearSet.get_default_rolls()),
+            'ATT/CRIT': GearSet(bonus=['Attack', 'Crit Damage'], rolls=GearSet.get_default_rolls()),
+            'HP/CRIT': GearSet(bonus=['Hp', 'Crit Damage'], rolls=GearSet.get_default_rolls()),
+            'ATT/DEF': GearSet(bonus=['Attack', 'Defense'], rolls=GearSet.get_default_rolls())
+        }
+
+    @staticmethod
+    def get_default_gear(gearName):
+        return GearSet.get_default_gears().get(gearName)
 
 
 @dataclass
@@ -55,7 +107,14 @@ class Character():
     grace: str = ''
 
     def getSkillData(self):
-        return '\n'.join([skill.getSkillData() for skill in self.skills])
+        out = []
+        count = 0
+        for skill in self.skills:
+            if count > 0 and count % 3 == 0:
+                out.append('------------------')
+            out.append(skill.getSkillData())
+            count += 1
+        return '\n'.join(out)
 
 
 @dataclass
@@ -109,4 +168,7 @@ class Team():
 
     @staticmethod
     def get_valid_team_postions():
+        return ['Offense', 'Defense']
+
+    def get_guild_wars_positions():
         return ['Offense', 'Defense']

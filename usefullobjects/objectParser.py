@@ -13,7 +13,6 @@ def dbCharaToObj(dbChara):
     if len(dbChara[7]) > 0:
         gears = dbChara[7].split('|')
         for gearData in gears:
-            print(gearData)
             gearDict = eval(gearData)
             gear = GearSet()
             gear.bonus = gearDict.get('bonus')

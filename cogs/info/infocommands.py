@@ -8,7 +8,7 @@ from pprint import pprint
 buffer = {}
 
 
-def getTeamApereance(con, unitId):
+def getTeamApereance(con, unitId, gw=False):
     if not buffer.get('teams'):
         updateBuffer(con)
     apereances = []
@@ -17,13 +17,10 @@ def getTeamApereance(con, unitId):
             apereances.append(team.name)
         else:
             for val in team.replacements.values():
-                if isinstance(val, (list, tuple)):
-                    for charaId in val:
-                        if charaId == unitId:
+                for charaId in val:
+                    if charaId == unitId:
+                        if gw and any([position in gcObjects.Team.get_guild_wars_positions() for position in team.position]):
                             apereances.append(team.name)
-                else:
-                    if val == unitId:
-                        apereances.append(team.name)
     return apereances
 
 
@@ -48,7 +45,7 @@ def getEmbedFromChara(con, chara: gcObjects.Character):
     embed.add_field(name='Gear', value=equipData if len(
         equipData) > 0 else 'No sets registered')
     teamApereances = '\n'.join(
-        f'-{teamName}' for teamName in getTeamApereance(con, chara.name))
+        f'-{teamName}' for teamName in getTeamApereance(con, chara.name, gw=True))
     if len(teamApereances) > 0:
         embed.add_field(name='GW Teams its used in',
                         value=teamApereances, inline=False)
@@ -375,8 +372,10 @@ async def edit_team(ctx, bot, con, picChannelId, team):
     team.picUrl = pic.attachments[0].url
     return team
 
-async def condition_accepted(ctx,bot,msg,options=['Yes','No']):
+
+async def condition_accepted(ctx, bot, msg, options=['Yes', 'No']):
     await utils.send_embed
+
 
 async def get_new_chara_name(ctx, bot, con, chara):
     await utils.send_embed(ctx, utils.info_embed(f'Trying to add a new name to {chara.name}. Adding the element before it is recommended (gFestGowther can be found searching festgowther)'))
@@ -393,6 +392,42 @@ async def get_new_chara_name(ctx, bot, con, chara):
         if not nameIsAccepted:
             await utils.send_embed(ctx, utils.errorEmbed('The name already exists. You can cancel the procedure with "cancel"'))
     return name
+
+
+def get_default_gear_embed():
+    descLines = []
+    for name, gear in gcObjects.GearSet.get_default_gears().items():
+        bonuses = '/'.join(gear.bonus)
+        rolls = ', '.join(gear.rolls)
+        descLines.append(f'-{name}: set => {bonuses} ({rolls})')
+    embed = discord.Embed(title='Default gear List',
+                          description='\n'.join(descLines), color=discord.Color.orange())
+    return embed
+
+
+async def create_gear(ctx, bot, chara):
+    await utils.send_embed(ctx, utils.info_embed(f'Creating gear for *{chara.names[0]}*'))
+    await utils.send_msg(ctx, msg='If you want one of the default gears, type it \'s name. Type "custom" to make a custom one')
+    await utils.send_embed(ctx, get_default_gear_embed())
+    acceptedAnswer = False
+    while not acceptedAnswer:
+        msg = await utils.getMsgFromUser(ctx, bot)
+        if not msg or utils.cancelChecker(msg.content):
+            await utils.send_cancel_msg(ctx)
+            return
+        answer = msg.content.upper()
+        if answer not in gcObjects.GearSet.get_default_gears().keys() and answer != 'CUSTOM':
+            await utils.send_embed(ctx, utils.errorEmbed('I did not like that answer, try again'))
+            continue
+        if answer != 'CUSTOM':
+            return gcObjects.GearSet.get_default_gear(answer)
+
+
+def edit_chara_gears(con, chara, gear):
+    newGears = chara.gear
+    newGears.append(gear)
+    customInteractions.update_gears_on_chara(con, chara.name, newGears)
+    updateBuffer(con)
 
 
 def edit_chara_names(con, chara, newName):

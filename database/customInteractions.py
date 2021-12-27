@@ -8,6 +8,11 @@ def update_names_on_chara(con, charaId, newNames: list):
         con, 'chara', {'names': ','.join(newNames)}, f'name="{charaId}"')
 
 
+def update_gears_on_chara(con, charaId, newGears: list):
+    databaseUtils.update(
+        con, 'chara', {'gear': '|'.join([str(gear)for gear in newGears])}, f'name="{charaId}"')
+
+
 def delete_team(con, teamId):
     databaseUtils.delete(con, 'team', f'name = "{teamId}"')
 
@@ -32,7 +37,6 @@ def update_charas(con, charasToUpdate):
 
 def get_update_charas_list(oldCharas, updateCharas):
     toUpdate = []
-    count = 0
     for upChara in updateCharas:
         chara = [chara for chara in oldCharas if chara.name == upChara.name]
         if len(chara) < 1:

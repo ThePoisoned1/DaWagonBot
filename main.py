@@ -51,8 +51,6 @@ def startBot(conf):
 
     @ bot.event
     async def on_ready():
-        print(bot.get_user(237974872599298049))
-        print(bot.get_user(237974872599298049))
         print('------')
         print('Logged in as')
         print(bot.user.name + "#" + bot.user.discriminator)
