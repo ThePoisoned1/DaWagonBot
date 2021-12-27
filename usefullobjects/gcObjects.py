@@ -43,7 +43,7 @@ class GearSet():
         return {
             'Top': ['Pierce Rate', 'Crit Chance', 'Crit Damage', 'Attack'],
             'Mid': ['Defense', 'Resistance', 'Crit Resistance', 'Crit Defense'],
-            'Bottom': ['HP', 'Regeneration Rate', 'Recovery Rate', 'Lifesteal']
+            'Bottom': ['Hp', 'Regeneration Rate', 'Recovery Rate', 'Lifesteal']
         }
 
     @staticmethod

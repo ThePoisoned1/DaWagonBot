@@ -1,6 +1,5 @@
 import discord
-from discord import embeds
-from numpy import mat
+from discord.member import M
 from utils import databaseUtils, utils
 from database import customInteractions
 from usefullobjects import objectParser, gcObjects
@@ -40,7 +39,8 @@ def getEmbedFromChara(con, chara: gcObjects.Character):
         embed.add_field(name='Grace', value=chara.grace, inline=False)
     if chara.relic:
         embed.add_field(name='Holy Relic', value=chara.relic, inline=False)
-    equipData = '\n'.join([gear.getGearData() for gear in chara.gear])
+    equipData = '\n-------------\n'.join([gear.getGearData()
+                                         for gear in chara.gear])
     embed.add_field(name='Skills', value=chara.getSkillData())
     embed.add_field(name='Gear', value=equipData if len(
         equipData) > 0 else 'No sets registered')
@@ -374,7 +374,13 @@ async def edit_team(ctx, bot, con, picChannelId, team):
 
 
 async def condition_accepted(ctx, bot, msg, options=['Yes', 'No']):
-    await utils.send_embed
+    aux = '/'.join(options)
+    await utils.send_embed(ctx, utils.info_embed(f'{msg} ({aux})'))
+    answer = await utils.getMsgFromUser(ctx, bot)
+    if not answer or utils.cancelChecker(answer.content.strip()):
+        await utils.send_cancel_msg(ctx)
+        return
+    return answer.content.capitalize().strip() == options[0]
 
 
 async def get_new_chara_name(ctx, bot, con, chara):
@@ -405,11 +411,115 @@ def get_default_gear_embed():
     return embed
 
 
+async def get_gear_set_set(ctx, bot):
+    accpetedSets = False
+    sets = gcObjects.GearSet.get_bonus_weights()
+    setNames = ', '.join(sets.keys())
+    gearSets = None
+    while not accpetedSets:
+        await utils.send_msg(ctx, msg=f'Enter the desired sets for the gear, separated by comma.\n{setNames}')
+        gearSets = await utils.getMsgFromUser(ctx, bot)
+        if not gearSets or utils.cancelChecker(gearSets.content):
+            await utils.send_cancel_msg(ctx)
+            return
+        gearSets = [gear.strip().title()
+                    for gear in gearSets.content.split(',')]
+        if len(gearSets) < 2:
+            await utils.send_embed(ctx, utils.errorEmbed('Gear need to have at least 2 sets'))
+            continue
+        if any(gearSet not in sets.keys() for gearSet in gearSets):
+            await utils.send_embed(ctx, utils.errorEmbed('One of the sets was not recognized. Try again'))
+            continue
+        bonusSum = sum([sets.get(gear) for gear in gearSets])
+        if bonusSum != 6:
+            await utils.send_embed(ctx, utils.errorEmbed(f'The pieces you need to make that set are {bonusSum}, please specify a 6 pieces set'))
+        else:
+            accpetedSets = True
+    return gearSets
+
+
+async def get_accepted_roll_number(ctx, bot, roll):
+    acceptedRoll = False
+    numRolls = None
+    while not acceptedRoll:
+        await utils.send_msg(ctx, msg=f'Enter the number of rolls for {roll}.')
+        numRolls = await utils.getMsgFromUser(ctx, bot)
+        if not numRolls or utils.cancelChecker(numRolls.content):
+            await utils.send_cancel_msg(ctx)
+            return
+        numRolls = numRolls.content
+        if not numRolls.isdigit():
+            await utils.send_msg(ctx, msg='Please input a number')
+            continue
+        numRolls = int(numRolls)
+        if numRolls >= 10 or numRolls < 1:
+            await utils.send_msg(ctx, msg='You are not supposed to inpout a number like that')
+        else:
+            acceptedRoll = True
+    return numRolls
+
+
+async def get_number_of_rolls(ctx, bot, rolls):
+    rollDict = {}
+    for roll in rolls:
+        rollNumber = await get_accepted_roll_number(ctx, bot, roll)
+        if not rollNumber:
+            return
+        rollDict[roll] = rollNumber
+    return rollDict
+
+
+async def get_gear_rolls(ctx, bot, pieces):
+    acceptedRolls = False
+    gearRolls = None
+    availableRolls = gcObjects.GearSet.get_rolls().get(pieces)
+    rollNames = ', '.join(availableRolls)
+    while not acceptedRolls:
+        await utils.send_msg(ctx, msg=f'Enter the rolls for the {pieces} pieces, separated by comma.\n{rollNames}')
+        gearRolls = await utils.getMsgFromUser(ctx, bot)
+        if not gearRolls or utils.cancelChecker(gearRolls.content):
+            await utils.send_cancel_msg(ctx)
+            return
+        gearRolls = [gear.strip().title()
+                     for gear in gearRolls.content.split(',')]
+        if any(gearRoll not in availableRolls for gearRoll in gearRolls):
+            await utils.send_embed(ctx, utils.errorEmbed('One of the rolls was not recognized. Try again'))
+            continue
+        if len(gearRolls) != 1:
+            rolls = await get_number_of_rolls(ctx, bot, gearRolls)
+            if not rolls:
+                return
+            if not sum([roll for roll in rolls.values()])==10:
+                await utils.send_msg(ctx,msg='The total rolls for the substats must be 10, try again')
+                continue
+            gearRolls = [f'{roll}({num})' for roll, num in rolls.items()]
+        acceptedRolls = True
+    return gearRolls
+
+
+async def create_custom_gear(ctx, bot):
+    await utils.send_embed(ctx, utils.info_embed('You are now creatating a custom gear'))
+    gear = gcObjects.GearSet()
+    gearSets = await get_gear_set_set(ctx, bot)
+    if not gearSets:
+        return
+    gear.bonus = gearSets
+    gearRolls = []
+    for piece in ['Top', 'Mid', 'Bottom']:
+        pieceRoll = await get_gear_rolls(ctx, bot, piece)
+        if not pieceRoll:
+            return
+        gearRolls.append(', '.join(pieceRoll))
+    gear.rolls = gearRolls
+    return gear
+
+
 async def create_gear(ctx, bot, chara):
     await utils.send_embed(ctx, utils.info_embed(f'Creating gear for *{chara.names[0]}*'))
     await utils.send_msg(ctx, msg='If you want one of the default gears, type it \'s name. Type "custom" to make a custom one')
     await utils.send_embed(ctx, get_default_gear_embed())
     acceptedAnswer = False
+    gear = None
     while not acceptedAnswer:
         msg = await utils.getMsgFromUser(ctx, bot)
         if not msg or utils.cancelChecker(msg.content):
@@ -420,7 +530,11 @@ async def create_gear(ctx, bot, chara):
             await utils.send_embed(ctx, utils.errorEmbed('I did not like that answer, try again'))
             continue
         if answer != 'CUSTOM':
-            return gcObjects.GearSet.get_default_gear(answer)
+            gear = gcObjects.GearSet.get_default_gear(answer)
+        else:
+            gear = await create_custom_gear(ctx, bot)
+        acceptedAnswer = True
+    return gear
 
 
 def edit_chara_gears(con, chara, gear):

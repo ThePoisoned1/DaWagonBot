@@ -99,7 +99,13 @@ class InfoCog(commands.Cog, name="GcInfo"):
         if not team:
             return
         await utils.send_embed(ctx, infocommands.getTeamEmbed(self.con, team))
-        #infocommands.add_team_to_db(self.con, team)
+        msg = 'The team showed above will be added. All good?'
+        confirmation = infocommands.condition_accepted(ctx, self.bot, msg)
+        if confirmation:
+            infocommands.add_team_to_db(self.con, team)
+            await utils.send_embed(ctx, utils.successEmbed('Team added'))
+        else:
+            await utils.send_cancel_msg(ctx)
 
     @commands.command(name="editTeam", pass_context=True, brief="<teamName>", description=descriptions.get('editteam'))
     @commands.check(userInAuthPpl)
@@ -111,7 +117,13 @@ class InfoCog(commands.Cog, name="GcInfo"):
         if team:
             embed = infocommands.getTeamEmbed(self.con, team)
             await utils.send_embed(ctx, embed)
-            infocommands.edit_team_in_db(self.con, team)
+            msg = f'The team ***{team.name}*** will be edited into the shown data. All good?'
+            confirmation = infocommands.condition_accepted(ctx, self.bot, msg)
+            if confirmation:
+                infocommands.edit_team_in_db(self.con, team)
+                await utils.send_embed(ctx, utils.successEmbed('Team edited'))
+            else:
+                await utils.send_cancel_msg(ctx)
 
     @commands.command(name="addName", pass_context=True, brief="<targetChara>", description=descriptions.get('addName'))
     @commands.check(userInAuthPpl)
@@ -120,8 +132,13 @@ class InfoCog(commands.Cog, name="GcInfo"):
         if not chara:
             return
         newCharaName = await infocommands.get_new_chara_name(ctx, self.bot, self.con, chara)
-        infocommands.edit_chara_names(self.con, chara, newCharaName)
-        await utils.send_embed(ctx,utils.successEmbed('Name Added'))
+        msg = f'The name ***{newCharaName}*** will be edited into **{chara.names[0]}**. All good?'
+        confirmation = infocommands.condition_accepted(ctx, self.bot, msg)
+        if confirmation:
+            infocommands.edit_chara_names(self.con, chara, newCharaName)
+            await utils.send_embed(ctx, utils.successEmbed('Name Added'))
+        else:
+            await utils.send_cancel_msg(ctx)
 
     @commands.command(name="addGear", pass_context=True, brief="<targetChara>", description=descriptions.get('addGear'))
     @commands.check(userInAuthPpl)
@@ -130,8 +147,18 @@ class InfoCog(commands.Cog, name="GcInfo"):
         if not chara:
             return
         gear = await infocommands.create_gear(ctx, self.bot, chara)
-        infocommands.edit_chara_gears(self.con, chara, gear)
-        await utils.send_embed(ctx,utils.successEmbed('Gear Added'))
+        if not gear:
+            return
+        bonuses = '/'.join(gear.bonus)
+        rolls = ', '.join(gear.rolls)
+        gearInfo = f'=> {bonuses} ({rolls})'
+        msg = f'The gear ***{gearInfo}*** will be edited into **{chara.names[0]}**. All good?'
+        confirmation = await infocommands.condition_accepted(ctx, self.bot, msg)
+        if confirmation:
+            infocommands.edit_chara_gears(self.con, chara, gear)
+            await utils.send_embed(ctx, utils.successEmbed('Gear Added'))
+        else:
+            await utils.send_cancel_msg(ctx)
 
     @commands.command(name="concatCharaImg", aliases=['concatImg'], pass_context=True, description=descriptions.get('listTeams'), hidden=True)
     @commands.is_owner()
