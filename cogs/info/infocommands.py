@@ -1,3 +1,4 @@
+from bs4 import element
 import cv2
 import discord
 from discord.member import M
@@ -102,9 +103,9 @@ def characterSearch(con, search: str):
     matches = []
     search = search.lower()
     for chara in buffer['charas']:
-        if any(search == name.lower() for name in [chara.name, chara.customName, chara.unitName]+chara.names):
+        if any(search == name.lower() for name in [chara.name]+chara.names):
             return [chara]
-        if any(search in name.lower() for name in [chara.name, chara.customName, chara.unitName]):
+        if any(search in name.lower() for name in [chara.customName, chara.unitName]):
             matches.append(chara)
         elif any(search in name.lower() for name in chara.names):
             matches.append(chara)
@@ -541,6 +542,39 @@ async def create_gear(ctx, bot, chara):
     return gear
 
 
+def get_fixed_names(con):
+    if not buffer.get('teams'):
+        updateBuffer(con)
+    toFix = []
+    for chara in buffer['charas']:
+        elementLetter = chara.names[0][0]
+        needsFix = False
+        auxChara = chara
+        newNames = []
+        for extraName in chara.names:
+            if extraName[0] != elementLetter:
+                newName = f'{elementLetter}{extraName[0].upper()}{extraName[1:]}'
+                newNames.append(newName)
+                needsFix = True
+            else:
+                newNames.append(extraName)
+        if needsFix:
+            auxChara.names = newNames
+            toFix.append(auxChara)
+    return toFix
+
+
+def fix_chara_names(con):
+    toFix = get_fixed_names(con)
+    for chara in toFix:
+        update_chara_names(con, chara.name, chara.names)
+    return True
+
+
+def get_default_gear_from_name(name):
+    return gcObjects.GearSet.get_default_gear(name)
+
+
 def get_shuffled_charas(con):
     if not buffer.get('charas'):
         updateBuffer(con)
@@ -568,7 +602,8 @@ def get_img_for_charas(charas):
         else:
             img = utils.vconcat_resize_min(rows[:-1])
             lastRowImg = rows[-1]
-            fillerImg = Image.open('.\\imgs\\charaFillerImg.png').convert('RGB')
+            fillerImg = Image.open(
+                '.\\imgs\\charaFillerImg.png').convert('RGB')
             fillerImg = np.asarray(fillerImg)
             for x in range(4-len(charas) % 4):
                 lastRowImg = utils.hconcat_resize_min([lastRowImg, fillerImg])
@@ -586,18 +621,30 @@ def get_random_team(con):
     return selected
 
 
-def edit_chara_gears(con, chara, gear):
+def get_chara_from_id(con, charaId):
+    if not buffer.get('charas'):
+        updateBuffer(con)
+    for chara in buffer['charas']:
+        if chara.name == charaId:
+            return chara
+
+
+def update_chara_names(con, charaId, newCharaNames):
+    customInteractions.update_names_on_chara(con, charaId, newCharaNames)
+    updateBuffer(con)
+
+
+def add_chara_gear(con, chara, gear):
     newGears = chara.gear
     newGears.append(gear)
     customInteractions.update_gears_on_chara(con, chara.name, newGears)
     updateBuffer(con)
 
 
-def edit_chara_names(con, chara, newName):
+def add_chara_name(con, chara, newName):
     newNames = chara.names
     newNames.append(newName)
-    customInteractions.update_names_on_chara(con, chara.name, newNames)
-    updateBuffer(con)
+    update_chara_names(con, chara.name, newNames)
 
 
 def add_team_to_db(con, team):

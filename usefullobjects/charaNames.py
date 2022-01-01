@@ -41,7 +41,7 @@ unitNames = {
     'Griamore': ['Griamore'],
     'Guila': ['Guila'],
     'Gustaf': ['Gustaf'],
-    'Hawk': ['Hawk','Hawkslo1'],
+    'Hawk': ['Hawk', 'Hawkslo1'],
     'Helbram': ['Helbram'],
     'Hendrickson': ['Hendrickson'],
     'Howzer': ['Howzer'],
@@ -72,7 +72,7 @@ unitNames = {
     'Nanashi': ['Nanashi'],
     'Ram': ['Ram'],
     'Rem': ['Rem'],
-    'Rimuru': ['Rimuru','Slimuru'],
+    'Rimuru': ['Rimuru', 'Slimuru'],
     'Roxy': ['Roxy'],
     'Rugal': ['Rugal'],
     'Ruin': ['Ruin'],
@@ -101,3 +101,10 @@ incompatibilities = [
     ['ElizabethHawk', 'Elizabeth', 'Liz'],
     ['ElizabethHawk', 'Hawk']
 ]
+
+attributeColors = {
+    'Vitality': 'Green',
+    'Strength': 'Red',
+    'Speed': 'Blue',
+    'Dark': 'Dark'
+}

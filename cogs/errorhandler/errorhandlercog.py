@@ -2,6 +2,7 @@ from pprint import pprint
 import discord
 import traceback
 import sys
+from utils import utils
 from discord.ext import commands
 from discord.ext.commands import errors
 
@@ -59,10 +60,12 @@ class CommandErrorHandler(commands.Cog):
         elif isinstance(error, commands.CheckFailure):
             if "global" in str(error):
                 await ctx.send("Commands don't allow the usage of ';' ")
-            elif isinstance(error,commands.errors.MissingAnyRole):
+            elif isinstance(error, commands.errors.MissingAnyRole):
                 await ctx.send('You don\'t have any of the required roles to use this')
             else:
                 await ctx.send('You didn\'t pass the test to use this')
+        elif isinstance(error, commands.CommandOnCooldown):
+            await utils.send_embed(ctx, utils.errorEmbed(f'Command on cooldown, try again in {error.retry_after:.2f} sec'))
         else:
             print('Ignoring exception in command {}:'.format(
                 ctx.command), file=sys.stderr)

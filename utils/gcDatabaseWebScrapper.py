@@ -27,12 +27,6 @@ races = {
     'race_goddess': 'Goddess',
     'race_unknown': 'Unknown',
 }
-attributeColors = {
-    'Vitality': 'Green',
-    'Strength': 'Red',
-    'Speed': 'Blue',
-    'Dark': 'Dark'
-}
 
 
 def getHTMLFromUrl(url):
@@ -64,13 +58,15 @@ def getSkillEffects(line, rawLine):
         '[h|H]eals HP': 'Heal',
         'Recovers HP': 'Recovers HP',
         '[d|D]isables everything including Ultimate Moves except for Debuff Skills': 'Disables everything but Debuff Skills',
-        '[d|D]isables Rank 2 and above': 'Disables Rank 2+'
+        '[d|D]isables Rank 2 and above': 'Disables Rank 2+',
+        'Removes Debuffs': 'Removes Debuffs'
     }
     incDecRejexes = {
         'Skill Ranks': 'Skill Rank',
         'Max HP by': 'HP',
         'Ultimate Move damage': 'Ultimate Move damage',
-        '[A|a]ll [S|s]tats': 'All stats'
+        '[A|a]ll [S|s]tats': 'All stats',
+        '[in|de]creases damage': 'Damage'
     }
     out = []
     effects = re.findall(regex, line)
@@ -189,7 +185,7 @@ def getCharaDataFromUrl(url):
     if chara.name == 'blessing_of_earth_diane1':
         chara.imageUrl = './imgs/ssrg_portrait.png'
     # first name
-    color = attributeColors[chara.attribute]
+    color = charaNames.attributeColors[chara.attribute]
     fName = utils.camel_case(f'{color[0].lower()} {chara.name[:-1]}')
     chara.names.append(fName)
     # skill effects

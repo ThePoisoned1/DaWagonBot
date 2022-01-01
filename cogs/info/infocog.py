@@ -145,7 +145,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
         msg = f'The name ***{newCharaName}*** will be edited into **{chara.names[0]}**. All good?'
         confirmation = await infocommands.condition_accepted(ctx, self.bot, msg)
         if confirmation:
-            infocommands.edit_chara_names(self.con, chara, newCharaName)
+            infocommands.add_chara_name(self.con, chara, newCharaName)
             await utils.send_embed(ctx, utils.successEmbed('Name Added'))
         else:
             await utils.send_cancel_msg(ctx)
@@ -165,13 +165,13 @@ class InfoCog(commands.Cog, name="GcInfo"):
         msg = f'The gear ***{gearInfo}*** will be edited into **{chara.names[0]}**. All good?'
         confirmation = await infocommands.condition_accepted(ctx, self.bot, msg)
         if confirmation:
-            infocommands.edit_chara_gears(self.con, chara, gear)
+            infocommands.add_chara_gear(self.con, chara, gear)
             await utils.send_embed(ctx, utils.successEmbed('Gear Added'))
         else:
             await utils.send_cancel_msg(ctx)
 
-    @ commands.command(name="concatCharaImg", aliases=['concatImg'], pass_context=True, description=descriptions.get('listTeams'), hidden=True)
-    @ commands.is_owner()
+    @commands.command(name="concatCharaImg", aliases=['concatImg'], pass_context=True, hidden=True)
+    @commands.is_owner()
     async def concatCharaImg(self, ctx, *charas):
         charas = (' '.join(charas)).split(',')
         charaObjs = [infocommands.characterSearch(
@@ -180,7 +180,43 @@ class InfoCog(commands.Cog, name="GcInfo"):
         img = await utils.send_img(ctx, img)
         # await utils.send_msg(ctx, img.attachments[0].url)
 
+    @commands.command(name="chadGearAdd", pass_context=True, hidden=True)
+    @commands.is_owner()
+    async def chadGearAdd(self, ctx, defaultGear):
+        charaNames = await utils.getMsgFromUser(ctx, self.bot)
+        if not charaNames or utils.cancelChecker(charaNames.content):
+            return
+        gear = infocommands.get_default_gear_from_name(defaultGear)
+        if not gear:
+            await utils.send_embed(ctx, utils.errorEmbed('Rip, Gear not found'))
+            return
+        charas = [infocommands.get_chara_from_id(
+            self.con, charaName)for charaName in charaNames.content.split(',')]
+        for chara in charas:
+            infocommands.add_chara_gear(self.con, chara, gear)
+        await utils.send_embed(ctx, utils.successEmbed('Gears Added'))
+
+    @commands.command(name="checkGears", pass_context=True, hidden=True)
+    @commands.is_owner()
+    async def checkGears(self, ctx):
+        charaNames = await utils.getMsgFromUser(ctx, self.bot)
+        if not charaNames or utils.cancelChecker(charaNames.content):
+            return
+        charas = [infocommands.get_chara_from_id(
+            self.con, charaName)for charaName in charaNames.content.split(',')]
+        for chara in charas:
+            if len(chara.gear) > 0:
+                await utils.send_msg(ctx, msg=chara.name)
+        await utils.send_embed(ctx, utils.successEmbed('Finished scanning'))
+
+    @commands.command(name="FixNames", pass_context=True, hidden=True)
+    @commands.is_owner()
+    async def fixNames(self, ctx):
+        if infocommands.fix_chara_names(self.con):
+            await utils.send_embed(ctx, utils.successEmbed('Finished Fixing'))
+
     @commands.command(name="randomTeam", aliases=['rteam', 'ranteam'], pass_context=True, description=descriptions.get('randomTeam'))
+    @commands.cooldown(1,10,commands.BucketType.user)
     async def randomTeam(self, ctx):
         randTeam = infocommands.get_random_team(self.con)
         img = infocommands.concatCharaPics(randTeam)
@@ -191,9 +227,9 @@ class InfoCog(commands.Cog, name="GcInfo"):
         embed.set_footer(
             text=f'Requested by {ctx.author.name}#{ctx.author.discriminator}', icon_url=ctx.author.avatar.url)
         await utils.send_embed(ctx, embed)
-        pass
 
     @commands.command(name="randomUnit", aliases=['runit', 'ranunit'], pass_context=True, brief="(ammount)", description=descriptions.get('randomUnit'))
+    @commands.cooldown(1,10,commands.BucketType.user)
     async def randomUnit(self, ctx, ammount: int = 1):
         if ammount < 1:
             await utils.send_embed(ctx, utils.errorEmbed('That num kinda sus man'))
