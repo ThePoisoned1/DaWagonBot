@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 from . import infocogconf, infocommands
 from utils import utils
@@ -23,6 +24,8 @@ class InfoCog(commands.Cog, name="GcInfo"):
         descriptions['editteam'] = 'Edits a team in the database'
         descriptions['addName'] = 'Adds a name to the AKA section of the character'
         descriptions['addGear'] = 'Adds a Gear Set to a characer'
+        descriptions['randomTeam'] = 'Gives you a random team with 4 units'
+        descriptions['randomUnit'] = 'Gives you a random unit or the specified ammount of them'
         return descriptions
 
     descriptions = getDescriptions()
@@ -33,7 +36,8 @@ class InfoCog(commands.Cog, name="GcInfo"):
     @commands.command(name="teamInfo", aliases=['tinfo'], pass_context=True, brief="<teamName>", description=descriptions.get('teamInfo'))
     @commands.check_any(commands.is_owner(), commands.has_any_role(*infocogconf.authedRoles.values()))
     async def teamInfo(self, ctx, *teamName):
-        teamName = ' '.join(teamName)
+        if isinstance(teamName, (list, tuple)):
+            teamName = ' '.join(teamName)
         team = None
         matches = infocommands.teamSearch(self.con, teamName)
         if len(matches) == 1:
@@ -61,7 +65,9 @@ class InfoCog(commands.Cog, name="GcInfo"):
 
     @commands.command(name="charaInfo", aliases=['cinfo'], pass_context=True, brief="<unitname>", description=descriptions.get('charaInfo'))
     @commands.check_any(commands.is_owner(), commands.has_any_role(*infocogconf.authedRoles.values()))
-    async def charaInfo(self, ctx, charaName):
+    async def charaInfo(self, ctx, *charaName):
+        if isinstance(charaName, (list, tuple)):
+            charaName = ' '.join(charaName)
         matches = infocommands.characterSearch(self.con, charaName)
         team = None
         if len(matches) == 1:
@@ -81,36 +87,38 @@ class InfoCog(commands.Cog, name="GcInfo"):
             if chara:
                 team = chara[0]
             else:
-                await utils.errorEmbed('No character found')
+                await utils.send_embed(ctx, utils.errorEmbed('No character found'))
                 return
             embed = infocommands.getEmbedFromChara(self.con, team)
         await utils.send_embed(ctx, embed)
         return team
 
-    @commands.command(name="listTeams", aliases=['teams'], pass_context=True, description=descriptions.get('listTeams'))
-    @commands.check_any(commands.is_owner(), commands.has_any_role(*infocogconf.authedRoles.values()))
+    @ commands.command(name="listTeams", aliases=['teams'], pass_context=True, description=descriptions.get('listTeams'))
+    @ commands.check_any(commands.is_owner(), commands.has_any_role(*infocogconf.authedRoles.values()))
     async def listTeams(self, ctx):
         await utils.send_embed(ctx, infocommands.allTeamsEmbed(self.con))
 
-    @commands.command(name="addTeam", pass_context=True, description=descriptions.get('addteam'))
-    @commands.check(userInAuthPpl)
+    @ commands.command(name="addTeam", pass_context=True, description=descriptions.get('addteam'))
+    @ commands.check(userInAuthPpl)
     async def addTeam(self, ctx):
         team = await infocommands.create_team(ctx, self.bot, self.con, self.picChannelId)
         if not team:
             return
         await utils.send_embed(ctx, infocommands.getTeamEmbed(self.con, team))
         msg = 'The team showed above will be added. All good?'
-        confirmation = infocommands.condition_accepted(ctx, self.bot, msg)
+        confirmation = await infocommands.condition_accepted(ctx, self.bot, msg)
         if confirmation:
             infocommands.add_team_to_db(self.con, team)
             await utils.send_embed(ctx, utils.successEmbed('Team added'))
         else:
             await utils.send_cancel_msg(ctx)
 
-    @commands.command(name="editTeam", pass_context=True, brief="<teamName>", description=descriptions.get('editteam'))
-    @commands.check(userInAuthPpl)
+    @ commands.command(name="editTeam", pass_context=True, brief="<teamName>", description=descriptions.get('editteam'))
+    @ commands.check(userInAuthPpl)
     async def editTeam(self, ctx, *teamName):
-        team = await self.teamInfo(ctx, ' '.join(teamName))
+        if isinstance(teamName, (list, tuple)):
+            teamName = ' '.join(teamName)
+        team = await self.teamInfo(ctx, teamName)
         if not team:
             return
         team = await infocommands.edit_team(ctx, self.bot, self.con, self.picChannelId, team)
@@ -125,23 +133,25 @@ class InfoCog(commands.Cog, name="GcInfo"):
             else:
                 await utils.send_cancel_msg(ctx)
 
-    @commands.command(name="addName", pass_context=True, brief="<targetChara>", description=descriptions.get('addName'))
-    @commands.check(userInAuthPpl)
+    @ commands.command(name="addName", pass_context=True, brief="<targetChara>", description=descriptions.get('addName'))
+    @ commands.check(userInAuthPpl)
     async def addName(self, ctx, targetChara):
         chara = await self.charaInfo(ctx, targetChara)
         if not chara:
             return
         newCharaName = await infocommands.get_new_chara_name(ctx, self.bot, self.con, chara)
+        if not newCharaName:
+            return
         msg = f'The name ***{newCharaName}*** will be edited into **{chara.names[0]}**. All good?'
-        confirmation = infocommands.condition_accepted(ctx, self.bot, msg)
+        confirmation = await infocommands.condition_accepted(ctx, self.bot, msg)
         if confirmation:
             infocommands.edit_chara_names(self.con, chara, newCharaName)
             await utils.send_embed(ctx, utils.successEmbed('Name Added'))
         else:
             await utils.send_cancel_msg(ctx)
 
-    @commands.command(name="addGear", pass_context=True, brief="<targetChara>", description=descriptions.get('addGear'))
-    @commands.check(userInAuthPpl)
+    @ commands.command(name="addGear", pass_context=True, brief="<targetChara>", description=descriptions.get('addGear'))
+    @ commands.check(userInAuthPpl)
     async def addGear(self, ctx, targetChara):
         chara = await self.charaInfo(ctx, targetChara)
         if not chara:
@@ -160,8 +170,8 @@ class InfoCog(commands.Cog, name="GcInfo"):
         else:
             await utils.send_cancel_msg(ctx)
 
-    @commands.command(name="concatCharaImg", aliases=['concatImg'], pass_context=True, description=descriptions.get('listTeams'), hidden=True)
-    @commands.is_owner()
+    @ commands.command(name="concatCharaImg", aliases=['concatImg'], pass_context=True, description=descriptions.get('listTeams'), hidden=True)
+    @ commands.is_owner()
     async def concatCharaImg(self, ctx, *charas):
         charas = (' '.join(charas)).split(',')
         charaObjs = [infocommands.characterSearch(
@@ -169,6 +179,40 @@ class InfoCog(commands.Cog, name="GcInfo"):
         img = infocommands.concatCharaPics(charaObjs)
         img = await utils.send_img(ctx, img)
         # await utils.send_msg(ctx, img.attachments[0].url)
+
+    @commands.command(name="randomTeam", aliases=['rteam', 'ranteam'], pass_context=True, description=descriptions.get('randomTeam'))
+    async def randomTeam(self, ctx):
+        randTeam = infocommands.get_random_team(self.con)
+        img = infocommands.concatCharaPics(randTeam)
+        url = await utils.send_img(ctx, img, channel=self.bot.get_channel(self.picChannelId))
+        embed = discord.Embed(title='Here it is, an epic random team',
+                              color=discord.Color.blurple())
+        embed.set_image(url=url.attachments[0].url)
+        embed.set_footer(
+            text=f'Requested by {ctx.author.name}#{ctx.author.discriminator}', icon_url=ctx.author.avatar.url)
+        await utils.send_embed(ctx, embed)
+        pass
+
+    @commands.command(name="randomUnit", aliases=['runit', 'ranunit'], pass_context=True, brief="(ammount)", description=descriptions.get('randomUnit'))
+    async def randomUnit(self, ctx, ammount: int = 1):
+        if ammount < 1:
+            await utils.send_embed(ctx, utils.errorEmbed('That num kinda sus man'))
+            return
+        elif ammount > 20:
+            await utils.send_embed(ctx, utils.errorEmbed('Isn\'t that a bit too much'))
+            return
+        # elif ammount % 4 != 0:
+        #     await utils.send_embed(ctx, utils.errorEmbed('For now only multiples of 4 pls'))
+        #     return
+        charas = infocommands.get_random_charas(self.con, ammount)
+        img = infocommands.get_img_for_charas(charas)
+        url = await utils.send_img(ctx, img, channel=self.bot.get_channel(self.picChannelId))
+        embed = discord.Embed(title='Here you have sir',
+                              color=discord.Color.blurple())
+        embed.set_image(url=url.attachments[0].url)
+        embed.set_footer(
+            text=f'Requested by {ctx.author.name}#{ctx.author.discriminator}', icon_url=ctx.author.avatar.url)
+        await utils.send_embed(ctx, embed)
 
 
 def setup(bot):

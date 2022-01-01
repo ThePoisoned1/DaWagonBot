@@ -20,11 +20,6 @@ from cogs.dastuff import dastuffcog
 from database import startDatabase, customInteractions
 
 
-# dev/pro
-profile = 'pro'
-updateCharas = False
-
-
 def addCogs(bot, conf, con):
     bot.add_cog(errorhandlercog.CommandErrorHandler(bot))
     bot.add_cog(infocog.InfoCog(bot, con, conf['pictures']['channel_id']))
@@ -40,7 +35,7 @@ def connectDb(dbConf):
     return con
 
 
-def startBot(conf):
+def startBot(conf, update=False):
     intents = discord.Intents.default()
     intents.members = True
     activity = utils.getBotActivity(
@@ -60,11 +55,12 @@ def startBot(conf):
     @ bot.check
     def check_commands(ctx):
         infor = f"{ctx.message.created_at} -> {ctx.message.author} <{ctx.message.author.id}> in '{ctx.guild} <{ctx.guild.id}>': {ctx.message.content}"
+        print(infor)
         # utils.addToLog(ctx.message.created_at, ctx.message.author,
         # ctx.message.author.id, ctx.guild, ctx.guild.id, ctx.message.content)
         return ';' not in ctx.message.content
     con = connectDb(conf['database'])
-    if updateCharas:
+    if update:
         customInteractions.run_chara_update(
             con, conf['database']['chara_base_url'])
     addCogs(bot, conf, con)
@@ -72,13 +68,22 @@ def startBot(conf):
     bot.run(conf['bot']['token'])
 
 
-def getConf():
+def getConf(prf):
     conf = configparser.ConfigParser()
-    pyProfile = os.environ.get('PYTHON_PROFILE', profile)
+    pyProfile = os.environ.get('PYTHON_PROFILE', prf)
     conf.read(os.path.join('conf', f'conf-{pyProfile}.conf'))
     return conf
 
 
 if __name__ == '__main__':
-    conf = getConf()
-    startBot(conf)
+    import argparse
+    parser = argparse.ArgumentParser(description='Starts the discord bot')
+    parser.add_argument('--update', '-u', action='store_true',
+                        help='Runs a character update in the database')
+    parser.add_argument('-dev', action='store_true',
+                        help='Runs the bot with the development conf')
+    args = parser.parse_args()
+    profile = 'dev' if args.dev else 'pro'
+    updateCharas = args.update
+    conf = getConf(profile)
+    startBot(conf, updateCharas)

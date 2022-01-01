@@ -278,6 +278,12 @@ def camel_case(s: str):
     return ''.join([s[0].lower(), s[1:]])
 
 
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+
 def hconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
     h_min = min(im.shape[0] for im in im_list)
     im_list_resize = [cv2.resize(im, (int(im.shape[1] * h_min / im.shape[0]), h_min), interpolation=interpolation)
@@ -285,18 +291,29 @@ def hconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
     return cv2.hconcat(im_list_resize)
 
 
+def vconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
+    w_min = min(im.shape[1] for im in im_list)
+    im_list_resize = [cv2.resize(im, (w_min, int(im.shape[0] * w_min / im.shape[1])), interpolation=interpolation)
+                      for im in im_list]
+    return cv2.vconcat(im_list_resize)
+
+
 def convert_string_to_bytes(string):
     bytes = b''
-    print(string)
     for i in string:
         bytes += struct.pack("B", ord(i))
     return bytes
+
+
+def binary_str_to_nparray(binstr):
+    imgData = io.BytesIO(binstr)
+    img = Image.open(imgData).convert('RGB')
+    img = np.asarray(img)
+    return img
 
 
 def downloadImgFromUrl(url):
     r = requests.get(url)
     if r.status_code == 200:
         r.raw.decode_content = True
-        imgData = io.BytesIO(r.content)
-        img = Image.open(imgData)
-        return np.asarray(img)
+        return r.content

@@ -1,9 +1,13 @@
+import cv2
 import discord
 from discord.member import M
 from utils import databaseUtils, utils
 from database import customInteractions
 from usefullobjects import objectParser, gcObjects
 from pprint import pprint
+import random
+import numpy as np
+from PIL import Image
 buffer = {}
 
 
@@ -87,7 +91,7 @@ def teamSearch(con, search: str):
     for team in buffer['teams']:
         if team.name.lower() == search:
             return [team]
-        elif any(search in name.lower() for name in team.otherNames):
+        elif any(search in name.lower() for name in team.otherNames) or search in team.name.lower():
             matches.append(team)
     return matches
 
@@ -157,8 +161,8 @@ def getTeamEmbed(con, team: gcObjects.Team):
 
 
 def concatCharaPics(charaObjs):
-    urls = [chara.imageUrl for chara in charaObjs]
-    files = [utils.downloadImgFromUrl(url) for url in urls]
+    files = [cv2.resize(utils.binary_str_to_nparray(chara.binImg), [
+        100, 100])for chara in charaObjs]
     return utils.hconcat_resize_min(files)
 
 
@@ -535,6 +539,51 @@ async def create_gear(ctx, bot, chara):
             gear = await create_custom_gear(ctx, bot)
         acceptedAnswer = True
     return gear
+
+
+def get_shuffled_charas(con):
+    if not buffer.get('charas'):
+        updateBuffer(con)
+    toShuffle = buffer['charas'].copy()
+    random.shuffle(toShuffle)
+    return toShuffle
+
+
+def get_random_charas(con, ammount: int):
+    randomized = get_shuffled_charas(con)
+    selected = []
+    for x in range(ammount):
+        selected.append(randomized.pop(0))
+    return selected
+
+
+def get_img_for_charas(charas):
+    rows = list(utils.chunks(charas, 4))
+    rows = [concatCharaPics(row) for row in rows]
+    if len(charas) % 4 == 0 and len(charas) > 4:
+        return utils.vconcat_resize_min(rows)
+    else:
+        if len(charas) <= 4:
+            return rows[0]
+        else:
+            img = utils.vconcat_resize_min(rows[:-1])
+            lastRowImg = rows[-1]
+            fillerImg = Image.open('.\\imgs\\charaFillerImg.png').convert('RGB')
+            fillerImg = np.asarray(fillerImg)
+            for x in range(4-len(charas) % 4):
+                lastRowImg = utils.hconcat_resize_min([lastRowImg, fillerImg])
+            img = utils.vconcat_resize_min([img, lastRowImg])
+            return img
+
+
+def get_random_team(con):
+    randomized = get_shuffled_charas(con)
+    selected = []
+    while len(selected) < 4:
+        chara = randomized.pop(0)
+        if gcObjects.Character.chara_can_go_in_team(selected, chara):
+            selected.append(chara)
+    return selected
 
 
 def edit_chara_gears(con, chara, gear):

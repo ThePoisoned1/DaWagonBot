@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from os import stat
+from . import charaNames
 
 
 @dataclass
@@ -105,6 +105,8 @@ class Character():
     relic: str = ''
     charaUrl: str = ''
     grace: str = ''
+    binImg: str = ''
+    realName: str = ''
 
     def getSkillData(self):
         out = []
@@ -115,6 +117,15 @@ class Character():
             out.append(skill.getSkillData())
             count += 1
         return '\n'.join(out)
+
+    @staticmethod
+    def chara_can_go_in_team(team, chara):
+        for incompatibility in charaNames.incompatibilities:
+            if chara.realName in incompatibility and any(unit.realName in incompatibility for unit in team):
+                return False
+            if chara.realName in [unit.realName for unit in team]:
+                return False
+        return True
 
 
 @dataclass

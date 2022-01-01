@@ -33,6 +33,8 @@ def createTables(con):
         grace text,
         relic text,
         charaUrl text,
+        binImg text,
+        realName text,
         PRIMARY KEY (name),
         FOREIGN KEY (rarity) REFERENCES rarity(name),
         FOREIGN KEY (attribute) REFERENCES attribute(name))''')
@@ -68,9 +70,9 @@ def insertCharas(con):
     allcharas = gcDatabaseWebScrapper.checkForSrSsr(allcharas)
     for chara in allcharas:
         data = [chara.name, ','.join(chara.names), chara.customName, chara.unitName, chara.rarity,
-                chara.attribute, ','.join(chara.race), '|'.join([str(gear)for gear in chara.gear]), chara.imageUrl, '|'.join([str(skill) for skill in chara.skills]), chara.passive, chara.commandment, chara.grace, chara.relic, chara.charaUrl]
+                chara.attribute, ','.join(chara.race), '|'.join([str(gear)for gear in chara.gear]), chara.imageUrl, '|'.join([str(skill) for skill in chara.skills]), chara.passive, chara.commandment, chara.grace, chara.relic, chara.charaUrl, chara.binImg]
         cursor.execute(
-            'insert into chara values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', data)
+            'insert into chara values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', data)
     con.commit()
 
 

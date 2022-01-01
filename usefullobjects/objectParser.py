@@ -28,6 +28,8 @@ def dbCharaToObj(dbChara):
     chara.grace = dbChara[12]
     chara.relic = dbChara[13]
     chara.charaUrl = dbChara[14]
+    chara.binImg = dbChara[15] if len(dbChara) > 15 else ''
+    chara.realName = dbChara[16] if len(dbChara) > 16 else ''
     return chara
 
 

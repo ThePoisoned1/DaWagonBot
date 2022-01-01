@@ -1,9 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
 from usefullobjects.gcObjects import *
+from usefullobjects import charaNames
 from pprint import pprint
 import re
 from utils import utils
+import cv2
 
 
 rarities = {
@@ -14,7 +16,8 @@ rarities = {
 attributes = {
     'attribute_vitality': 'Vitality',
     'attribute_strength': 'Strength',
-    'attribute_speed': 'Speed'
+    'attribute_speed': 'Speed',
+    'attribute_dark': 'Dark'
 }
 races = {
     'race_human': 'Human',
@@ -27,7 +30,8 @@ races = {
 attributeColors = {
     'Vitality': 'Green',
     'Strength': 'Red',
-    'Speed': 'Blue'
+    'Speed': 'Blue',
+    'Dark': 'Dark'
 }
 
 
@@ -65,7 +69,8 @@ def getSkillEffects(line, rawLine):
     incDecRejexes = {
         'Skill Ranks': 'Skill Rank',
         'Max HP by': 'HP',
-        'Ultimate Move damage': 'Ultimate Move damage'
+        'Ultimate Move damage': 'Ultimate Move damage',
+        '[A|a]ll [S|s]tats': 'All stats'
     }
     out = []
     effects = re.findall(regex, line)
@@ -151,6 +156,14 @@ def get_skills_ult(result, pos):
     return skills, pos
 
 
+def get_chara_real_name(charaId):
+    charaId = charaId.lower()
+    for name, rejexes in charaNames.unitNames.items():
+        if any(len(re.findall(rejex.lower(), charaId)) > 0 for rejex in rejexes):
+            return name
+    print('PEPEGA', charaId)
+
+
 def getCharaDataFromUrl(url):
     baseUrl = '/'.join(url.split('/')[:3])
     page = getHTMLFromUrl(url)
@@ -158,6 +171,7 @@ def getCharaDataFromUrl(url):
     chara = Character()
     # name
     chara.name = ''.join(url.split('/')[-2:])
+    chara.realName = get_chara_real_name(chara.name)
     result = page.find_all("div", class_="pt-3")
     name = result[0]
     chara.customName = name.find('h5', class_='whitetext').text
@@ -172,12 +186,13 @@ def getCharaDataFromUrl(url):
     chara.race = getInfoFromHtmlLine(data[5].img, races)
     chara.imageUrl = baseUrl + '/' + \
         page.find_all('img')[0].get('src').replace('../', '')
+    if chara.name == 'blessing_of_earth_diane1':
+        chara.imageUrl = './imgs/ssrg_portrait.png'
     # first name
     color = attributeColors[chara.attribute]
     fName = utils.camel_case(f'{color[0].lower()} {chara.name[:-1]}')
     chara.names.append(fName)
     # skill effects
-
     pos += 1
     if any(header.text == 'Associated with' for header in page.find_all("h2", class_="whitetext")):
         pos += 1
@@ -201,18 +216,20 @@ def getCharaDataFromUrl(url):
         pos += 1
     # holy relic
     if any(header.text == 'Holy Relic' for header in page.find_all("h2", class_="whitetext")):
-        weirdosRejexes = ['^merlin\d$', '^slater\d$', '^roxy\d$']
-        if any([re.match(weidoRejex, chara.name) for weidoRejex in weirdosRejexes]):
-            aux = pos+1
-            chara.relic = result[aux].find_all('td')[1].text
-        else:
-            chara.relic = result[pos].find_all('td')[1].text
+        chara.relic = result[pos].find_all('td')[1].text
     # commandment
     if any(header.text == 'Commandment' for header in page.find_all("h2", class_="whitetext")):
         chara.commandment = result[pos].find_all('td')[0].text
+    # grace
     if any(header.text == 'Grace' for header in page.find_all("h2", class_="whitetext")):
         chara.grace = result[pos].find_all('td')[0].text
     chara.charaUrl = url
+    if chara.name == 'blessing_of_earth_diane1':
+        img = cv2.imread(chara.imageUrl)
+        binStr = cv2.imencode('.png', img)[1].tostring()
+        chara.binImg = binStr
+    else:
+        chara.binImg = utils.downloadImgFromUrl(chara.imageUrl)
     return chara
 
 
