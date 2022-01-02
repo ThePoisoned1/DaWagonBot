@@ -54,19 +54,22 @@ def getSkillEffects(line, rawLine):
     extraRejexes = {
         'of diminished HP': 'Restores dimished HP',
         '[d|D]epletes Ultimate Move Gauge': 'Depletes orbs (end of turn)',
+        '[d|D]epletes the Ultimate Move Gauge': 'Depletes orbs',
         '>Evasion<': 'Evasion',
         '[h|H]eals HP': 'Heal',
         'Recovers HP': 'Recovers HP',
         '[d|D]isables everything including Ultimate Moves except for Debuff Skills': 'Disables everything but Debuff Skills',
         '[d|D]isables Rank 2 and above': 'Disables Rank 2+',
-        'Removes Debuffs': 'Removes Debuffs'
+        'Removes Debuffs': 'Removes Debuffs',
+        '[C|c]ounter': 'Counter',
+        'Attack when taking attacks': 'Counter',
     }
     incDecRejexes = {
         'Skill Ranks': 'Skill Rank',
         'Max HP by': 'HP',
         'Ultimate Move damage': 'Ultimate Move damage',
         '[A|a]ll [S|s]tats': 'All stats',
-        '[in|de]creases damage': 'Damage'
+        '[Iin|Dde]creases damage': 'Damage'
     }
     out = []
     effects = re.findall(regex, line)

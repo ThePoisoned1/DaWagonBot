@@ -552,10 +552,17 @@ def get_fixed_names(con):
         auxChara = chara
         newNames = []
         for extraName in chara.names:
+            newName = None
             if extraName[0] != elementLetter:
                 newName = f'{elementLetter}{extraName[0].upper()}{extraName[1:]}'
-                newNames.append(newName)
                 needsFix = True
+            if ' ' in extraName:
+                if not newName:
+                    newName = extraName
+                newName = newName.replace(' ', '')
+                needsFix = True
+            if needsFix:
+                newNames.append(newName)
             else:
                 newNames.append(extraName)
         if needsFix:

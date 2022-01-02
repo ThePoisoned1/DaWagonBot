@@ -46,16 +46,17 @@ def startBot(conf, update=False):
 
     @ bot.event
     async def on_ready():
-        print('------')
-        print('Logged in as')
-        print(bot.user.name + "#" + bot.user.discriminator)
-        print(bot.user.id)
-        print('------')
+        print('------', file=conf['log']['path'])
+        print('Logged in as', file=conf['log']['path'])
+        print(bot.user.name + "#" + bot.user.discriminator,
+              file=conf['log']['path'])
+        print(bot.user.id, file=conf['log']['path'])
+        print('------', file=conf['log']['path'])
 
     @ bot.check
     def check_commands(ctx):
         infor = f"{ctx.message.created_at} -> {ctx.message.author} <{ctx.message.author.id}> in '{ctx.guild} <{ctx.guild.id}>': {ctx.message.content}"
-        print(infor)
+        print(infor, file=conf['log']['path'])
         # utils.addToLog(ctx.message.created_at, ctx.message.author,
         # ctx.message.author.id, ctx.guild, ctx.guild.id, ctx.message.content)
         return ';' not in ctx.message.content
