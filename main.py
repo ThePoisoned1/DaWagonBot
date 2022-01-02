@@ -43,20 +43,21 @@ def startBot(conf, update=False):
     status = utils.getBotStatus(conf['bot']['status'])
     bot = commands.Bot(
         command_prefix=commands.when_mentioned_or(conf['bot']['prefix']), activity=activity, status=status, help_command=None, intents=intents, case_insensitive=True)
-
+    logFile = open(conf['log']['path'],'a+')
     @ bot.event
     async def on_ready():
-        print('------', file=conf['log']['path'])
-        print('Logged in as', file=conf['log']['path'])
+        print('------', file=logFile)
+        print('Logged in as', file=logFile)
         print(bot.user.name + "#" + bot.user.discriminator,
-              file=conf['log']['path'])
-        print(bot.user.id, file=conf['log']['path'])
-        print('------', file=conf['log']['path'])
+              file=logFile)
+        print(bot.user.id, file=logFile)
+        print('------', file=logFile)
 
     @ bot.check
     def check_commands(ctx):
+        logFile = open(conf['log']['path'],'a+')
         infor = f"{ctx.message.created_at} -> {ctx.message.author} <{ctx.message.author.id}> in '{ctx.guild} <{ctx.guild.id}>': {ctx.message.content}"
-        print(infor, file=conf['log']['path'])
+        print(infor, file=logFile)
         # utils.addToLog(ctx.message.created_at, ctx.message.author,
         # ctx.message.author.id, ctx.guild, ctx.guild.id, ctx.message.content)
         return ';' not in ctx.message.content
