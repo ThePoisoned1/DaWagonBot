@@ -29,7 +29,8 @@ class InfoCog(commands.Cog, name="GcInfo"):
         return descriptions
 
     descriptions = getDescriptions()
-
+    
+    @commands.check
     def userInAuthPpl(ctx):
         return ctx.author.id in infocogconf.authedUsers.values()
 
@@ -93,13 +94,13 @@ class InfoCog(commands.Cog, name="GcInfo"):
         await utils.send_embed(ctx, embed)
         return team
 
-    @ commands.command(name="listTeams", aliases=['teams'], pass_context=True, description=descriptions.get('listTeams'))
-    @ commands.check_any(commands.is_owner(), commands.has_any_role(*infocogconf.authedRoles.values()))
+    @commands.command(name="listTeams", aliases=['teams'], pass_context=True, description=descriptions.get('listTeams'))
+    @commands.check_any(commands.is_owner(), commands.has_any_role(*infocogconf.authedRoles.values()))
     async def listTeams(self, ctx):
         await utils.send_embed(ctx, infocommands.allTeamsEmbed(self.con))
 
-    @ commands.command(name="addTeam", pass_context=True, description=descriptions.get('addteam'))
-    @ commands.check(userInAuthPpl)
+    @commands.command(name="addTeam", pass_context=True, description=descriptions.get('addteam'))
+    @commands.check_any(userInAuthPpl,commands.has_any_role(*infocogconf.editRoles.values()))
     async def addTeam(self, ctx):
         team = await infocommands.create_team(ctx, self.bot, self.con, self.picChannelId)
         if not team:
@@ -113,8 +114,8 @@ class InfoCog(commands.Cog, name="GcInfo"):
         else:
             await utils.send_cancel_msg(ctx)
 
-    @ commands.command(name="editTeam", pass_context=True, brief="<teamName>", description=descriptions.get('editteam'))
-    @ commands.check(userInAuthPpl)
+    @commands.command(name="editTeam", pass_context=True, brief="<teamName>", description=descriptions.get('editteam'))
+    @commands.check_any(userInAuthPpl,commands.has_any_role(*infocogconf.editRoles.values()))
     async def editTeam(self, ctx, *teamName):
         if isinstance(teamName, (list, tuple)):
             teamName = ' '.join(teamName)
@@ -133,8 +134,8 @@ class InfoCog(commands.Cog, name="GcInfo"):
             else:
                 await utils.send_cancel_msg(ctx)
 
-    @ commands.command(name="addName", pass_context=True, brief="<targetChara>", description=descriptions.get('addName'))
-    @ commands.check(userInAuthPpl)
+    @commands.command(name="addName", pass_context=True, brief="<targetChara>", description=descriptions.get('addName'))
+    @commands.check_any(userInAuthPpl,commands.has_any_role(*infocogconf.editRoles.values()))
     async def addName(self, ctx, targetChara):
         chara = await self.charaInfo(ctx, targetChara)
         if not chara:
@@ -150,8 +151,8 @@ class InfoCog(commands.Cog, name="GcInfo"):
         else:
             await utils.send_cancel_msg(ctx)
 
-    @ commands.command(name="addGear", pass_context=True, brief="<targetChara>", description=descriptions.get('addGear'))
-    @ commands.check(userInAuthPpl)
+    @commands.command(name="addGear", pass_context=True, brief="<targetChara>", description=descriptions.get('addGear'))
+    @commands.check_any(userInAuthPpl,commands.has_any_role(*infocogconf.editRoles.values()))
     async def addGear(self, ctx, targetChara):
         chara = await self.charaInfo(ctx, targetChara)
         if not chara:
