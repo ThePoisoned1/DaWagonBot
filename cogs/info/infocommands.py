@@ -656,13 +656,13 @@ async def charaReroller(bot, ctx, msg, embed, charas, queue, rerolls, picChannel
                 and user.id == ctx.author.id
             )
         except asyncio.TimeoutError:
-            await utils.clearReactions(msg, embed)
+            await msg.clear_reactions()
             break
         else:
             emojistr = str(reaction.emoji)
             await reaction.remove(user)
             if emojistr == OptionSelector.emojiCancel:
-                await utils.clearReactions(msg, embed)
+                await msg.clear_reactions()
                 break
             choosen = OptionSelector.getEmojiValue(str(reaction.emoji))
             charas, queue = reroll_chara(charas, queue, choosen)
@@ -672,7 +672,7 @@ async def charaReroller(bot, ctx, msg, embed, charas, queue, rerolls, picChannel
             rerolls-=1
             await msg.edit(embed=embed)
     else:
-        await utils.clearReactions(msg, embed)
+        await msg.clear_reactions()
 
 
 async def get_gear_to_delete(ctx, bot, chara):
