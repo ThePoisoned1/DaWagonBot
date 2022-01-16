@@ -643,8 +643,9 @@ async def charaReroller(bot, ctx, msg, embed, charas, queue, rerolls, picChannel
     for x in range(len(charas)):
         await msg.add_reaction(emojiOptions[x])
     await msg.add_reaction(OptionSelector.emojiCancel)
+    ogRerolls = rerolls
     while rerolls > 0:
-        embed.description = f'({rerolls-1} rerolls left)'
+        embed.description = f'({rerolls-1}/{ogRerolls} rerolls left)'
         try:
             reaction, user = await bot.wait_for(
                 "reaction_add",
