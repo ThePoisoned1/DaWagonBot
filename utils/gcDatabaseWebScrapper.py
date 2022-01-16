@@ -69,7 +69,10 @@ def getSkillEffects(line, rawLine):
         'Max HP by': 'HP',
         'Ultimate Move damage': 'Ultimate Move damage',
         '[A|a]ll [S|s]tats': 'All stats',
-        '[Iin|Dde]creases damage': 'Damage'
+        '[Iin|Dde]creases damage': 'Damage',
+        'Crit Resistance': 'Crit Resistance',
+        'Crit Defense': 'Crit Defense'
+
     }
     out = []
     effects = re.findall(regex, line)
