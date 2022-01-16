@@ -26,10 +26,11 @@ class InfoCog(commands.Cog, name="GcInfo"):
         descriptions['addGear'] = 'Adds a Gear Set to a characer'
         descriptions['randomTeam'] = 'Gives you a random team with 4 units'
         descriptions['randomUnit'] = 'Gives you a random unit or the specified ammount of them'
+        descriptions['deleteGear'] = 'Removes a gear from the specified unit'
         return descriptions
 
     descriptions = getDescriptions()
-    
+
     @commands.check
     def userInAuthPpl(ctx):
         return ctx.author.id in infocogconf.authedUsers.values()
@@ -100,7 +101,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
         await utils.send_embed(ctx, infocommands.allTeamsEmbed(self.con))
 
     @commands.command(name="addTeam", pass_context=True, description=descriptions.get('addteam'))
-    @commands.check_any(userInAuthPpl,commands.has_any_role(*infocogconf.editRoles.values()))
+    @commands.check_any(userInAuthPpl, commands.has_any_role(*infocogconf.editRoles.values()))
     async def addTeam(self, ctx):
         team = await infocommands.create_team(ctx, self.bot, self.con, self.picChannelId)
         if not team:
@@ -115,7 +116,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
             await utils.send_cancel_msg(ctx)
 
     @commands.command(name="editTeam", pass_context=True, brief="<teamName>", description=descriptions.get('editteam'))
-    @commands.check_any(userInAuthPpl,commands.has_any_role(*infocogconf.editRoles.values()))
+    @commands.check_any(userInAuthPpl, commands.has_any_role(*infocogconf.editRoles.values()))
     async def editTeam(self, ctx, *teamName):
         if isinstance(teamName, (list, tuple)):
             teamName = ' '.join(teamName)
@@ -135,7 +136,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
                 await utils.send_cancel_msg(ctx)
 
     @commands.command(name="addName", pass_context=True, brief="<targetChara>", description=descriptions.get('addName'))
-    @commands.check_any(userInAuthPpl,commands.has_any_role(*infocogconf.editRoles.values()))
+    @commands.check_any(userInAuthPpl, commands.has_any_role(*infocogconf.editRoles.values()))
     async def addName(self, ctx, targetChara):
         chara = await self.charaInfo(ctx, targetChara)
         if not chara:
@@ -152,7 +153,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
             await utils.send_cancel_msg(ctx)
 
     @commands.command(name="addGear", pass_context=True, brief="<targetChara>", description=descriptions.get('addGear'))
-    @commands.check_any(userInAuthPpl,commands.has_any_role(*infocogconf.editRoles.values()))
+    @commands.check_any(userInAuthPpl, commands.has_any_role(*infocogconf.editRoles.values()))
     async def addGear(self, ctx, targetChara):
         chara = await self.charaInfo(ctx, targetChara)
         if not chara:
@@ -217,9 +218,10 @@ class InfoCog(commands.Cog, name="GcInfo"):
             await utils.send_embed(ctx, utils.successEmbed('Finished Fixing'))
 
     @commands.command(name="randomTeam", aliases=['rteam', 'ranteam'], pass_context=True, description=descriptions.get('randomTeam'))
-    @commands.cooldown(1,10,commands.BucketType.user)
-    async def randomTeam(self, ctx):
-        randTeam = infocommands.get_random_team(self.con)
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def randomTeam(self, ctx, rerolls: int = 0):
+        randTeam, queue = infocommands.get_random_team(
+            self.con, rerollable=True)
         img = infocommands.concatCharaPics(randTeam)
         url = await utils.send_img(ctx, img, channel=self.bot.get_channel(self.picChannelId))
         embed = discord.Embed(title='Here it is, an epic random team',
@@ -227,10 +229,12 @@ class InfoCog(commands.Cog, name="GcInfo"):
         embed.set_image(url=url.attachments[0].url)
         embed.set_footer(
             text=f'Requested by {ctx.author.name}#{ctx.author.discriminator}', icon_url=ctx.author.avatar.url)
-        await utils.send_embed(ctx, embed)
+        msg = await utils.send_embed(ctx, embed)
+        if rerolls > 0:
+            await infocommands.charaReroller(self.bot, ctx, msg, embed, randTeam, queue, rerolls, self.bot.get_channel(self.picChannelId))
 
     @commands.command(name="randomUnit", aliases=['runit', 'ranunit'], pass_context=True, brief="(ammount)", description=descriptions.get('randomUnit'))
-    @commands.cooldown(1,10,commands.BucketType.user)
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def randomUnit(self, ctx, ammount: int = 1):
         if ammount < 1:
             await utils.send_embed(ctx, utils.errorEmbed('That num kinda sus man'))
@@ -250,6 +254,28 @@ class InfoCog(commands.Cog, name="GcInfo"):
         embed.set_footer(
             text=f'Requested by {ctx.author.name}#{ctx.author.discriminator}', icon_url=ctx.author.avatar.url)
         await utils.send_embed(ctx, embed)
+
+    @commands.command(name="deleteGear", aliases=['dGear', 'rGear', 'removeGear'], pass_context=True, brief="<Character>", description=descriptions.get('deleteGear'))
+    @commands.check_any(userInAuthPpl, commands.has_any_role(*infocogconf.editRoles.values()))
+    async def deleteGear(self, ctx, charaName):
+        if isinstance(charaName, (list, tuple)):
+            charaName = ' '.join(charaName)
+        chara = await self.charaInfo(ctx, charaName)
+        if not chara:
+            return
+        gearToDelete = await infocommands.get_gear_to_delete(ctx, self.bot, chara)
+        if isinstance(gearToDelete, (list, tuple)):
+            msg = f'All the gears for {chara.names[0]} will be deleted'
+        else:
+            msg = f'{gearToDelete.get_gear_short_data()}\nwill be deleted from {chara.names[0]}'
+            gearToDelete = [gearToDelete]
+        confirmation = await infocommands.condition_accepted(ctx, self.bot, msg)
+        if confirmation:
+            for gear in gearToDelete:
+                infocommands.del_chara_gear(self.con,chara,gear)
+            await utils.send_embed(ctx, utils.successEmbed('Gear Deleted'))
+        else:
+            await utils.send_cancel_msg(ctx)
 
 
 def setup(bot):

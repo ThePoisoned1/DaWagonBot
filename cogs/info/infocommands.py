@@ -1,14 +1,14 @@
-from bs4 import element
+from types import new_class
 import cv2
 import discord
-from discord.member import M
-from utils import databaseUtils, utils
+from utils import databaseUtils, utils, OptionSelector
 from database import customInteractions
 from usefullobjects import objectParser, gcObjects
 from pprint import pprint
 import random
 import numpy as np
 from PIL import Image
+import asyncio
 buffer = {}
 
 
@@ -618,14 +618,83 @@ def get_img_for_charas(charas):
             return img
 
 
-def get_random_team(con):
+def get_random_team(con, rerollable=False):
     randomized = get_shuffled_charas(con)
     selected = []
     while len(selected) < 4:
         chara = randomized.pop(0)
         if gcObjects.Character.chara_can_go_in_team(selected, chara):
             selected.append(chara)
-    return selected
+    return selected if not rerollable else selected, randomized
+
+
+def reroll_chara(charas, queue, toReroll):
+    charas.pop(toReroll)
+    while len(queue) > 0:
+        chara = queue.pop(0)
+        if gcObjects.Character.chara_can_go_in_team(charas, chara):
+            charas.insert(toReroll, chara)
+            break
+    return charas, queue
+
+
+async def charaReroller(bot, ctx, msg, embed, charas, queue, rerolls, picChannel):
+    emojiOptions = OptionSelector.emojiOptions
+    for x in range(len(charas)):
+        await msg.add_reaction(emojiOptions[x])
+    await msg.add_reaction(OptionSelector.emojiCancel)
+    while rerolls > 0:
+        embed.description = f'({rerolls-1} rerolls left)'
+        try:
+            reaction, user = await bot.wait_for(
+                "reaction_add",
+                timeout=25,
+                check=lambda reaction, user: str(
+                    reaction.emoji) in emojiOptions[:len(charas)]
+                and user.id != bot.user.id
+                and reaction.message.id == msg.id
+                and user.id == ctx.author.id
+            )
+        except asyncio.TimeoutError:
+            await utils.clearReactions(msg, embed)
+            break
+        else:
+            emojistr = str(reaction.emoji)
+            await reaction.remove(user)
+            if emojistr == OptionSelector.emojiCancel:
+                await utils.clearReactions(msg, embed)
+                break
+            choosen = OptionSelector.getEmojiValue(str(reaction.emoji))
+            charas, queue = reroll_chara(charas, queue, choosen)
+            newPic = concatCharaPics(charas)
+            picMsg = await utils.send_img(ctx, newPic, channel=picChannel)
+            embed.set_image(url=picMsg.attachments[0].url)
+            rerolls-=1
+            await msg.edit(embed=embed)
+    else:
+        await utils.clearReactions(msg, embed)
+
+
+async def get_gear_to_delete(ctx, bot, chara):
+    gears = chara.gear
+    if len(gears) < 1:
+        await utils.send_embed(ctx, utils.errorEmbed('That chara has no gears man'))
+        return
+
+    options = [gear.get_gear_short_data() for gear in gears]
+    options.append('All')
+    selectedOption, msg = await OptionSelector.option_selector(bot, ctx, options)
+    print(selectedOption)
+    pprint(gears)
+    if selectedOption == None:
+        await utils.send_cancel_msg(ctx)
+        return
+    if selectedOption >= len(gears):
+        return gears
+    else:
+        print('c')
+        print(gears[selectedOption])
+        return gears[selectedOption]
 
 
 def get_chara_from_id(con, charaId):
@@ -644,6 +713,16 @@ def update_chara_names(con, charaId, newCharaNames):
 def add_chara_gear(con, chara, gear):
     newGears = chara.gear
     newGears.append(gear)
+    customInteractions.update_gears_on_chara(con, chara.name, newGears)
+    updateBuffer(con)
+
+
+def del_chara_gear(con, chara, delGear):
+    newGears = []
+    print(type(delGear))
+    for gear in chara.gear:
+        if gear != delGear:
+            newGears.append(gear)         
     customInteractions.update_gears_on_chara(con, chara.name, newGears)
     updateBuffer(con)
 

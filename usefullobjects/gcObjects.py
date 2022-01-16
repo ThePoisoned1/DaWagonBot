@@ -13,12 +13,40 @@ class GearSet():
             'rolls': ','.join(self.rolls)
         })
 
+    def __eq__(self, __o: object) -> bool:
+        print(self,__o)
+        print(len(self.bonus) != len(__o.bonus) or len(self.rolls) != len(__o.rolls))
+        if isinstance(__o, GearSet):
+            if len(self.bonus) != len(__o.bonus) or len(self.rolls) != len(__o.rolls):
+                return False
+            print(self.bonus)
+            for bon in self.bonus:
+                print(bon)
+                if bon not in __o.bonus:
+                    return False
+            print(self.rolls)
+            for roll in self.rolls:
+                print(roll)
+                if roll not in __o.rolls:
+                    return False
+        else:
+            return False
+        return True
+    
+    def __ne__(self, __o: object) -> bool:
+        return not self.__eq__(__o)
+
     def getGearData(self):
         out = 'Set => '
         out += '/'.join(self.bonus) if len(self.bonus) > 0 else 'Not set'
         out += '\nSubstats => '
         out += ', '.join(self.rolls) if len(self.rolls) > 0 else 'Not set'
         return out
+
+    def get_gear_short_data(self):
+        bonuses = '/'.join(self.bonus)
+        substats = ', '.join(self.rolls)
+        return f'{bonuses} ({substats})'
 
     @staticmethod
     def get_bonus_weights():
