@@ -222,6 +222,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
     async def randomTeam(self, ctx, rerolls: int = 0):
         if rerolls > 7:
             await utils.send_embed(ctx,embed=utils.errorEmbed('Thats a bit to much ma boi'))
+            return
         randTeam, queue = infocommands.get_random_team(
             self.con, rerollable=True)
         img = infocommands.concatCharaPics(randTeam)

@@ -644,8 +644,9 @@ async def charaReroller(bot, ctx, msg, embed, charas, queue, rerolls, picChannel
         await msg.add_reaction(emojiOptions[x])
     await msg.add_reaction(OptionSelector.emojiCancel)
     ogRerolls = rerolls
+    history = ''
     while rerolls > 0:
-        embed.description = f'({rerolls-1}/{ogRerolls} rerolls left)'
+        
         try:
             reaction, user = await bot.wait_for(
                 "reaction_add",
@@ -665,12 +666,15 @@ async def charaReroller(bot, ctx, msg, embed, charas, queue, rerolls, picChannel
             if emojistr == OptionSelector.emojiCancel:
                 await msg.clear_reactions()
                 break
-            choosen = OptionSelector.getEmojiValue(str(reaction.emoji))
-            charas, queue = reroll_chara(charas, queue, choosen)
+            chosen = OptionSelector.getEmojiValue(str(reaction.emoji))
+            history+=f'\n {charas[chosen].names[0]} => '
+            charas, queue = reroll_chara(charas, queue, chosen)
+            history += charas[chosen].names[0]
             newPic = concatCharaPics(charas)
             picMsg = await utils.send_img(ctx, newPic, channel=picChannel)
             embed.set_image(url=picMsg.attachments[0].url)
-            rerolls-=1
+            rerolls -= 1
+            embed.description = f'({rerolls}/{ogRerolls} rerolls left)'+history
             await msg.edit(embed=embed)
     else:
         await msg.clear_reactions()
@@ -723,7 +727,7 @@ def del_chara_gear(con, chara, delGear):
     print(type(delGear))
     for gear in chara.gear:
         if gear != delGear:
-            newGears.append(gear)         
+            newGears.append(gear)
     customInteractions.update_gears_on_chara(con, chara.name, newGears)
     updateBuffer(con)
 
