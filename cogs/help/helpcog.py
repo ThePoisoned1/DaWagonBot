@@ -31,7 +31,6 @@ class HelpCog(commands.Cog, name="Help"):
     @commands.command(name="ping", pass_context=True, description="Pings the bot")
     async def ping(self, ctx):
         await ctx.send('Pong! {0}ms'.format(round(self.bot.latency*1000, 3)))
-        a = 1/0
 
 def setup(bot):
     bot.add_cog(HelpCog(bot))
