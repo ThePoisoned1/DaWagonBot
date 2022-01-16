@@ -217,9 +217,11 @@ class InfoCog(commands.Cog, name="GcInfo"):
         if infocommands.fix_chara_names(self.con):
             await utils.send_embed(ctx, utils.successEmbed('Finished Fixing'))
 
-    @commands.command(name="randomTeam", aliases=['rteam', 'ranteam'], pass_context=True, description=descriptions.get('randomTeam'))
+    @commands.command(name="randomTeam", aliases=['rteam', 'ranteam'],brief='(numRerolls)', pass_context=True, description=descriptions.get('randomTeam'))
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def randomTeam(self, ctx, rerolls: int = 0):
+        if rerolls > 7:
+            await utils.send_embed(ctx,embed=utils.errorEmbed('Thats a bit to much ma boi'))
         randTeam, queue = infocommands.get_random_team(
             self.con, rerollable=True)
         img = infocommands.concatCharaPics(randTeam)
