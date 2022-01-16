@@ -21,7 +21,7 @@ from database import startDatabase, customInteractions
 
 
 def addCogs(bot, conf, con):
-    bot.add_cog(errorhandlercog.CommandErrorHandler(bot))
+    bot.add_cog(errorhandlercog.CommandErrorHandler(bot, conf['log']['path']))
     bot.add_cog(infocog.InfoCog(bot, con, conf['pictures']['channel_id']))
     bot.add_cog(dastuffcog.DaStuffCog(bot, con, conf))
     bot.add_cog(helpcog.HelpCog(bot, conf['bot']))
@@ -43,9 +43,10 @@ def startBot(conf, update=False):
     status = utils.getBotStatus(conf['bot']['status'])
     bot = commands.Bot(
         command_prefix=commands.when_mentioned_or(conf['bot']['prefix']), activity=activity, status=status, help_command=None, intents=intents, case_insensitive=True)
-    logFile = open(conf['log']['path'],'a+')
-    @ bot.event
+
+    @bot.event
     async def on_ready():
+        logFile = open(conf['log']['path'], 'a+', encoding='utf-8')
         print('------', file=logFile)
         print('Logged in as', file=logFile)
         print(bot.user.name + "#" + bot.user.discriminator,
@@ -53,9 +54,9 @@ def startBot(conf, update=False):
         print(bot.user.id, file=logFile)
         print('------', file=logFile)
 
-    @ bot.check
+    @bot.check
     def check_commands(ctx):
-        logFile = open(conf['log']['path'],'a+')
+        logFile = open(conf['log']['path'], 'a+', encoding='utf-8')
         infor = f"{ctx.message.created_at} -> {ctx.message.author} <{ctx.message.author.id}> in '{ctx.guild} <{ctx.guild.id}>': {ctx.message.content}"
         print(infor, file=logFile)
         # utils.addToLog(ctx.message.created_at, ctx.message.author,

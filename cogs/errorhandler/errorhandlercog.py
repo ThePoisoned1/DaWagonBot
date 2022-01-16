@@ -4,13 +4,13 @@ import traceback
 import sys
 from utils import utils
 from discord.ext import commands
-from discord.ext.commands import errors
 
 
 class CommandErrorHandler(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot, logFile):
         self.bot = bot
+        self.logFile = logFile
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -67,10 +67,11 @@ class CommandErrorHandler(commands.Cog):
         elif isinstance(error, commands.CommandOnCooldown):
             await utils.send_embed(ctx, utils.errorEmbed(f'Command on cooldown, try again in {error.retry_after:.2f} sec'))
         else:
+            log = open(self.logFile, 'a+', encoding='utf-8')
             print('Ignoring exception in command {}:'.format(
-                ctx.command), file=sys.stderr)
+                ctx.command), file=log)
             traceback.print_exception(
-                type(error), error, error.__traceback__, file=sys.stderr)
+                type(error), error, error.__traceback__, file=log)
 
 
 def setup(bot):
