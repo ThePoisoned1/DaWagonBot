@@ -36,7 +36,7 @@ def iq_(user):
     """
     random.seed(user.id)
     iq = random.randint(-200, 400)
-    return f"{utils.parsePossesive(user.name)} iq is {iq}."
+    return f"{utils.parse_possesive(user.name)} iq is {iq}."
 
 
 def ppSize_(user):
@@ -49,7 +49,7 @@ def ppSize_(user):
     """
     random.seed(user.id*3)
     ppLength = random.randint(-10, 30)
-    return f"{utils.parsePossesive(user.name)} pp is {ppLength}cm long."
+    return f"{utils.parse_possesive(user.name)} pp is {ppLength}cm long."
 
 def sus():
     susPics = [
