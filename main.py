@@ -15,6 +15,8 @@ from cogs.errorhandler import errorhandlercog
 from cogs.help import helpcog
 from cogs.info import infocog
 from cogs.dastuff import dastuffcog
+from cogs.fun import FunCog
+from cogs.games import gamescog
 
 # database initializer
 from database import startDatabase, customInteractions
@@ -25,6 +27,8 @@ def addCogs(bot, conf, con):
     bot.add_cog(infocog.InfoCog(bot, con, conf['pictures']['channel_id']))
     bot.add_cog(dastuffcog.DaStuffCog(bot, con, conf))
     bot.add_cog(helpcog.HelpCog(bot, conf['bot']))
+    bot.add_cog(FunCog.FunCog(bot))
+    bot.add_cog(gamescog.GamesCog(bot))
 
 
 def connectDb(dbConf):

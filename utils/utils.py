@@ -241,6 +241,17 @@ def getBotActivity(activityType: str, msg, url=None):
 
     return activity
 
+def parse_possesive(name):
+    """
+    Returns the name + the posseive 's or '
+    Parameters
+    -----------
+    name : srt
+    """
+    if name[-1].lower() == "s":
+        return name + "\'"
+    else:
+        return name + "\'s"
 
 def getBotStatus(status):
     """
