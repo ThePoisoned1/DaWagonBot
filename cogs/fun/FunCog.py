@@ -12,7 +12,7 @@ class FunCog(commands.Cog, name="Fun"):
     def getDescriptions():
         descriptions = {}
         descriptions[
-            "8ball"] = "Play russian roulette with you friends, what can go wrong"
+            "8ball"] = "Ask the 8Ball"
         descriptions[
             "choose"] = "Let me choose an option do you (separate with \'|\')"
         descriptions["iq"] = "Shows yours or an user's iq"
@@ -85,7 +85,7 @@ class FunCog(commands.Cog, name="Fun"):
         if not snipedMsg:
             embed = utils.info_embed('Nothing to snipe')
         else:
-            data = f'Before:\n{snipedMsg[0].content}\nAfter:\n{snipedMsg[1].content}'
+            data = f'**Before:**\n{snipedMsg[0].content}\n**After**:\n{snipedMsg[1].content}'
             embed = discord.Embed(
                 title='Sniped', description=data, color=discord.Color.red())
             embed.set_footer(
