@@ -62,7 +62,7 @@ class FunCog(commands.Cog, name="Fun"):
     async def avatar(self, ctx, user: discord.Member = None):
         if user == None:
             user = ctx.message.author
-        await utils.send_msg(ctx, user.avatar_url)
+        await utils.send_msg(ctx, msg=user.avatar.url)
 
     @commands.command(name="sus", pass_context=True, description=descriptions.get("sus"))
     async def sus(self, ctx):
