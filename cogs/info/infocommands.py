@@ -192,7 +192,6 @@ async def get_team_name(ctx, bot, con, edit=False, origName=None):
     acceptedName = False
     teamName = None
     while not acceptedName:
-
         msg = await utils.getMsgFromUser(ctx, bot)
         if msg and utils.cancelChecker(msg.content):
             await utils.send_cancel_msg(ctx)
@@ -252,8 +251,9 @@ async def get_team_units(ctx, bot, con, replacements=False, cantBe: str = None, 
 async def get_team_replacements(ctx, bot, con, mainCharas):
     await utils.send_embed(ctx, utils.info_embed('Time to enter the replacements for the characters in the team'))
     reaplacementsFinal = {}
+    msg = utils.send_embed(ctx,utils.info_embed('.'))
     for chara in mainCharas:
-        await utils.send_msg(ctx, msg=f'Replacements for **{chara.names[0]}** ("skip" to set no replacements)')
+        await utils.send_embed(ctx, embed=utils.info_embed(f'Replacements for **{chara.names[0]}** ("skip" to set no replacements)'))
         reaplacements = await get_team_units(ctx, bot, con, replacements=True, cantBe=chara.name)
         if reaplacements:
             reaplacementsFinal[chara.name] = [
@@ -406,40 +406,39 @@ async def get_new_chara_name(ctx, bot, con, chara):
 
 
 def get_default_gear_embed():
-    descLines = []
-    for name, gear in gcObjects.GearSet.get_default_gears().items():
-        bonuses = '/'.join(gear.bonus)
-        rolls = ', '.join(gear.rolls)
-        descLines.append(f'-{name}: set => {bonuses} ({rolls})')
+    descLines = get_default_gear_options()
     embed = discord.Embed(title='Default gear List',
                           description='\n'.join(descLines), color=discord.Color.orange())
     return embed
 
 
-async def get_gear_set_set(ctx, bot):
-    accpetedSets = False
+def get_default_gear_options():
+    gears = []
+    for name, gear in gcObjects.GearSet.get_default_gears().items():
+        bonuses = '/'.join(gear.bonus)
+        rolls = ', '.join(gear.rolls)
+        gears.append(f'-{name}: set => {bonuses} ({rolls})')
+    return gears
+
+
+async def get_gear_set_set(ctx, bot, msg):
     sets = gcObjects.GearSet.get_bonus_weights()
-    setNames = ', '.join(sets.keys())
-    gearSets = None
-    while not accpetedSets:
-        await utils.send_msg(ctx, msg=f'Enter the desired sets for the gear, separated by comma.\n{setNames}')
-        gearSets = await utils.getMsgFromUser(ctx, bot)
-        if not gearSets or utils.cancelChecker(gearSets.content):
+    setsList = list(sets.keys())
+    bonusSum = 0
+    gearSets = []
+    setBonusNum = 1
+    while bonusSum < 6:
+        chosen, msg = await OptionSelector.option_selector(bot, ctx, sets.keys(), title=f'Enter the {utils.ordinal(setBonusNum)} bonus of the set', msg=msg)
+        if chosen == None:
             await utils.send_cancel_msg(ctx)
             return
-        gearSets = [gear.strip().title()
-                    for gear in gearSets.content.split(',')]
-        if len(gearSets) < 2:
-            await utils.send_embed(ctx, utils.errorEmbed('Gear need to have at least 2 sets'))
-            continue
-        if any(gearSet not in sets.keys() for gearSet in gearSets):
-            await utils.send_embed(ctx, utils.errorEmbed('One of the sets was not recognized. Try again'))
-            continue
-        bonusSum = sum([sets.get(gear) for gear in gearSets])
-        if bonusSum != 6:
-            await utils.send_embed(ctx, utils.errorEmbed(f'The pieces you need to make that set are {bonusSum}, please specify a 6 pieces set'))
+        bonus = setsList[chosen]
+        if bonusSum + sets.get(bonus) <= 6 and bonus not in gearSets:
+            gearSets.append(bonus)
+            bonusSum += sets.get(bonus)
+            setBonusNum += 1
         else:
-            accpetedSets = True
+            await utils.send_embed(ctx, embed=utils.errorEmbed(f'{bonus} in not a valid addition to {", ".join(gearSets)}'), delete_after=5)
     return gearSets
 
 
@@ -474,46 +473,54 @@ async def get_number_of_rolls(ctx, bot, rolls):
     return rollDict
 
 
-async def get_gear_rolls(ctx, bot, pieces):
-    acceptedRolls = False
-    gearRolls = None
+async def get_gear_rolls(ctx, bot, pieces, msg):
     availableRolls = gcObjects.GearSet.get_rolls().get(pieces)
-    rollNames = ', '.join(availableRolls)
-    while not acceptedRolls:
-        await utils.send_msg(ctx, msg=f'Enter the rolls for the {pieces} pieces, separated by comma.\n{rollNames}')
-        gearRolls = await utils.getMsgFromUser(ctx, bot)
-        if not gearRolls or utils.cancelChecker(gearRolls.content):
+    rollNum = 0
+    selectedRolls = {}
+
+    while rollNum < 10:
+        selected = f'({", ".join(selectedRolls.keys())})' if len(
+            selectedRolls) > 0 else '\b'
+        chosen, msg = await OptionSelector.option_selector(bot, ctx, availableRolls, title=f'Rolls for the {pieces} pieces. '+selected, msg=msg)
+        if chosen == None:
             await utils.send_cancel_msg(ctx)
             return
-        gearRolls = [gear.strip().title()
-                     for gear in gearRolls.content.split(',')]
-        if any(gearRoll not in availableRolls for gearRoll in gearRolls):
-            await utils.send_embed(ctx, utils.errorEmbed('One of the rolls was not recognized. Try again'))
+        roll = availableRolls[chosen]
+        if roll in selectedRolls.keys():
+            await utils.send_embed(ctx, embed=utils.errorEmbed('You already added that roll'), delete_after=5)
             continue
-        if len(gearRolls) != 1:
-            rolls = await get_number_of_rolls(ctx, bot, gearRolls)
-            if not rolls:
-                return
-            if not sum([roll for roll in rolls.values()]) == 10:
-                await utils.send_msg(ctx, msg='The total rolls for the substats must be 10, try again')
-                continue
-            gearRolls = [f'{roll}({num})' for roll, num in rolls.items()]
-        acceptedRolls = True
-    return gearRolls
+        rolls, msg = await OptionSelector.option_selector(bot, ctx, range(1, 11), title=f'Number of rolls?', msg=msg)
+        if rolls == None:
+            await utils.send_cancel_msg(ctx)
+            return
+        rolls += 1
+        if rolls + rollNum <= 10:
+            rollNum += rolls
+            selectedRolls[roll] = rolls
+        else:
+            await utils.send_embed(ctx, embed=utils.errorEmbed('That surpases the maximum number of rolls for the pieces'), delete_after=5)
+    return selectedRolls
 
 
-async def create_custom_gear(ctx, bot):
-    await utils.send_embed(ctx, utils.info_embed('You are now creatating a custom gear'))
+def parse_piece_rolls(rolls):
+    if len(rolls) == 1:
+        return rolls.keys()
+    else:
+        return [f'{roll}({num})'for roll, num in rolls.items()]
+
+
+async def create_custom_gear(ctx, bot, msg):
     gear = gcObjects.GearSet()
-    gearSets = await get_gear_set_set(ctx, bot)
+    gearSets = await get_gear_set_set(ctx, bot, msg)
     if not gearSets:
         return
     gear.bonus = gearSets
     gearRolls = []
     for piece in ['Top', 'Mid', 'Bottom']:
-        pieceRoll = await get_gear_rolls(ctx, bot, piece)
+        pieceRoll = await get_gear_rolls(ctx, bot, piece, msg)
         if not pieceRoll:
             return
+        pieceRoll = parse_piece_rolls(pieceRoll)
         gearRolls.append(', '.join(pieceRoll))
     gear.rolls = gearRolls
     return gear
@@ -521,24 +528,16 @@ async def create_custom_gear(ctx, bot):
 
 async def create_gear(ctx, bot, chara):
     await utils.send_embed(ctx, utils.info_embed(f'Creating gear for *{chara.names[0]}*'))
-    await utils.send_msg(ctx, msg='If you want one of the default gears, type it \'s name. Type "custom" to make a custom one')
-    await utils.send_embed(ctx, get_default_gear_embed())
-    acceptedAnswer = False
-    gear = None
-    while not acceptedAnswer:
-        msg = await utils.getMsgFromUser(ctx, bot)
-        if not msg or utils.cancelChecker(msg.content):
-            await utils.send_cancel_msg(ctx)
-            return
-        answer = msg.content.upper()
-        if answer not in gcObjects.GearSet.get_default_gears().keys() and answer != 'CUSTOM':
-            await utils.send_embed(ctx, utils.errorEmbed('I did not like that answer, try again'))
-            continue
-        if answer != 'CUSTOM':
-            gear = gcObjects.GearSet.get_default_gear(answer)
-        else:
-            gear = await create_custom_gear(ctx, bot)
-        acceptedAnswer = True
+    options = get_default_gear_options()
+    options.append('Custom')
+    chosen, msg = await OptionSelector.option_selector(bot, ctx, options)
+    if chosen == None:
+        await utils.send_cancel_msg(ctx)
+        return
+    if chosen != len(options)-1:
+        gear = list(gcObjects.GearSet.get_default_gears().values())[chosen]
+    else:
+        gear = await create_custom_gear(ctx, bot, msg)
     return gear
 
 
@@ -646,7 +645,7 @@ async def charaReroller(bot, ctx, msg, embed, charas, queue, rerolls, picChannel
     ogRerolls = rerolls
     history = ''
     while rerolls > 0:
-        
+
         try:
             reaction, user = await bot.wait_for(
                 "reaction_add",
@@ -667,7 +666,7 @@ async def charaReroller(bot, ctx, msg, embed, charas, queue, rerolls, picChannel
                 await msg.clear_reactions()
                 break
             chosen = OptionSelector.getEmojiValue(str(reaction.emoji))
-            history+=f'\n {charas[chosen].names[0]} => '
+            history += f'\n {charas[chosen].names[0]} => '
             charas, queue = reroll_chara(charas, queue, chosen)
             history += charas[chosen].names[0]
             newPic = concatCharaPics(charas)
@@ -689,16 +688,12 @@ async def get_gear_to_delete(ctx, bot, chara):
     options = [gear.get_gear_short_data() for gear in gears]
     options.append('All')
     selectedOption, msg = await OptionSelector.option_selector(bot, ctx, options)
-    print(selectedOption)
-    pprint(gears)
     if selectedOption == None:
         await utils.send_cancel_msg(ctx)
         return
     if selectedOption >= len(gears):
         return gears
     else:
-        print('c')
-        print(gears[selectedOption])
         return gears[selectedOption]
 
 
@@ -724,7 +719,6 @@ def add_chara_gear(con, chara, gear):
 
 def del_chara_gear(con, chara, delGear):
     newGears = []
-    print(type(delGear))
     for gear in chara.gear:
         if gear != delGear:
             newGears.append(gear)

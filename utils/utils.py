@@ -16,7 +16,7 @@ from pprint import pprint
 import struct
 
 
-async def send_embed(ctx, embed, view=None):
+async def send_embed(ctx, embed, view=None, delete_after=None):
     """
     Function that handles the sending of embeds
     -> Takes context and embed to send
@@ -26,10 +26,10 @@ async def send_embed(ctx, embed, view=None):
     If this all fails: https://youtu.be/dQw4w9WgXcQ
     """
     try:
-        msg = await ctx.send(embed=embed, view=view)
+        msg = await ctx.send(embed=embed, view=view, delete_after=delete_after)
         return msg
     except Forbidden:
-        send_msg(ctx, view=view)
+        send_msg(ctx, view=view, delete_after=delete_after)
 
 
 async def send_img(ctx, fileArray: np.ndarray, channel=None):
@@ -40,18 +40,17 @@ async def send_img(ctx, fileArray: np.ndarray, channel=None):
         return await ctx.send(file=discord.File('file.png'))
 
 
-async def send_msg(ctx, msg=None, view=None):
+async def send_msg(ctx, msg=None, view=None,delete_after=None):
     if not msg:
         msg = f"Hey, seems like I can't send any message in {ctx.channel.name} on {ctx.guild.name}"
     try:
-        await ctx.send(msg, view=view)
+        await ctx.send(msg, view=view,delete_after=delete_after)
     except Forbidden:
         await ctx.author.send(msg)
 
 
 async def send_cancel_msg(ctx, msg='Operaction canceled'):
     await send_msg(ctx, msg=msg)
-
 
 def errorMsg():
     exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -241,6 +240,7 @@ def getBotActivity(activityType: str, msg, url=None):
 
     return activity
 
+
 def parse_possesive(name):
     """
     Returns the name + the posseive 's or '
@@ -252,6 +252,7 @@ def parse_possesive(name):
         return name + "\'"
     else:
         return name + "\'s"
+
 
 def getBotStatus(status):
     """
@@ -287,6 +288,9 @@ def getDiscordColor(color: str):
 def camel_case(s: str):
     s = re.sub(r"(_|-)+", " ", s).title().replace(" ", "")
     return ''.join([s[0].lower(), s[1:]])
+
+
+def ordinal(n): return f'{n}{"tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4]}'
 
 
 def chunks(lst, n):

@@ -161,6 +161,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
         gear = await infocommands.create_gear(ctx, self.bot, chara)
         if not gear:
             return
+        print('asdfasdf')
         bonuses = '/'.join(gear.bonus)
         rolls = ', '.join(gear.rolls)
         gearInfo = f'=> {bonuses} ({rolls})'

@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from collections import OrderedDict
 from . import charaNames
 
 
@@ -14,8 +15,9 @@ class GearSet():
         })
 
     def __eq__(self, __o: object) -> bool:
-        print(self,__o)
-        print(len(self.bonus) != len(__o.bonus) or len(self.rolls) != len(__o.rolls))
+        print(self, __o)
+        print(len(self.bonus) != len(__o.bonus)
+              or len(self.rolls) != len(__o.rolls))
         if isinstance(__o, GearSet):
             if len(self.bonus) != len(__o.bonus) or len(self.rolls) != len(__o.rolls):
                 return False
@@ -32,7 +34,7 @@ class GearSet():
         else:
             return False
         return True
-    
+
     def __ne__(self, __o: object) -> bool:
         return not self.__eq__(__o)
 
@@ -50,17 +52,17 @@ class GearSet():
 
     @staticmethod
     def get_bonus_weights():
-        return {
-            'Attack': 4,
-            'Defense': 2,
-            'Hp': 4,
-            'Crit Chance': 4,
-            'Crit Resistance': 2,
-            'Recovery Rate': 2,
-            'Crit Damage': 2,
-            'Crit Defense': 2,
-            'Lifesteal': 2
-        }
+        weights = OrderedDict()
+        weights['Attack'] = 4
+        weights['Defense'] = 2
+        weights['Hp'] = 4
+        weights['Crit Chance'] = 4
+        weights['Crit Resistance'] = 2
+        weights['Recovery Rate'] = 2
+        weights['Crit Damage'] = 2
+        weights['Crit Defense'] = 2
+        weights['Lifesteal'] = 2
+        return weights
 
     @staticmethod
     def get_bonuses():
@@ -88,12 +90,16 @@ class GearSet():
 
     @staticmethod
     def get_default_gears():
-        return{
-            'HP/DEF': GearSet(bonus=['Hp', 'Defense'], rolls=GearSet.get_default_rolls()),
-            'ATT/CRIT': GearSet(bonus=['Attack', 'Crit Damage'], rolls=GearSet.get_default_rolls()),
-            'HP/CRIT': GearSet(bonus=['Hp', 'Crit Damage'], rolls=GearSet.get_default_rolls()),
-            'ATT/DEF': GearSet(bonus=['Attack', 'Defense'], rolls=GearSet.get_default_rolls())
-        }
+        gears = OrderedDict()
+        gears['HP/DEF'] = GearSet(bonus=['Hp', 'Defense'],
+                                  rolls=GearSet.get_default_rolls())
+        gears['ATT/CRIT'] = GearSet(bonus=['Attack', 'Crit Damage'],
+                                    rolls=GearSet.get_default_rolls())
+        gears['HP/CRIT'] = GearSet(bonus=['Hp', 'Crit Damage'],
+                                   rolls=GearSet.get_default_rolls())
+        gears['ATT/DEF'] = GearSet(bonus=['Attack', 'Defense'],
+                                   rolls=GearSet.get_default_rolls())
+        return gears
 
     @staticmethod
     def get_default_gear(gearName):
