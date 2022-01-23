@@ -1,3 +1,4 @@
+from datetime import datetime
 import imp
 import discord
 from discord.ext import commands
@@ -74,11 +75,11 @@ class FunCog(commands.Cog, name="Fun"):
             embed = utils.info_embed('Nothing to snipe')
         else:
             embed = discord.Embed(
-                title='Sniped', description=snipedMsg.content, color=discord.Color.red())
+                title='Sniped', description=snipedMsg.content, color=discord.Color.red(),timestamp=snipedMsg.created_at)
             embed.set_footer(
-                text=f'{snipedMsg.author.name}#{snipedMsg.author.discriminator} ({utils.parseTime(snipedMsg.created_at)})', icon_url=snipedMsg.author.avatar.url)
+                text=f'{snipedMsg.author.name}#{snipedMsg.author.discriminator}', icon_url=snipedMsg.author.avatar.url)
         await utils.send_embed(ctx, embed)
-    
+
     @commands.command(name="editSnipe", pass_context=True, description=descriptions.get("editSnipe"))
     async def editSnipe(self, ctx):
         snipedMsg = self.editSnipedMsgs.get(ctx.guild.id)
@@ -87,9 +88,9 @@ class FunCog(commands.Cog, name="Fun"):
         else:
             data = f'**Before:**\n{snipedMsg[0].content}\n**After**:\n{snipedMsg[1].content}'
             embed = discord.Embed(
-                title='Sniped', description=data, color=discord.Color.red())
+                title='Sniped', description=data, color=discord.Color.red(),timestamp=snipedMsg[1].edited_at)
             embed.set_footer(
-                text=f'{snipedMsg[0].author.name}#{snipedMsg[0].author.discriminator} ({utils.parseTime(snipedMsg[1].edited_at)})', icon_url=snipedMsg[0].author.avatar.url)
+                text=f'{snipedMsg[0].author.name}#{snipedMsg[0].author.discriminator}', icon_url=snipedMsg[0].author.avatar.url)
         await utils.send_embed(ctx, embed)
 
 
