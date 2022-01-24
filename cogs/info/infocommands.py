@@ -197,6 +197,8 @@ async def get_team_name(ctx, bot, con, edit=False, origName=None):
             await utils.send_cancel_msg(ctx)
             return
         if edit and msg.content == 'skip':
+            await title.delete()
+            await msg.delete()
             return origName
         teamName = msg.content
         acceptedName = team_name_is_unique(con, teamName)
@@ -287,6 +289,8 @@ async def get_team_position(ctx, bot, edit=False, origPos=None):
             await utils.send_cancel_msg(ctx)
             return
         if edit and msg.content == 'skip':
+            await title.delete()
+            await msg.delete()
             return origPos
         positions = [position.strip().capitalize()
                      for position in msg.content.split(',')]
@@ -357,7 +361,6 @@ async def create_team(ctx, bot, con, picChannelId):
         return
     newTeam.explanation = desc.content
     await title.delete()
-    print(desc)
     await desc.delete()
     teamPic = concatCharaPics(teamMembers)
     outputChannel = bot.get_channel(picChannelId)
@@ -386,13 +389,15 @@ async def edit_team(ctx, bot, con, picChannelId, team):
     if not teamPos:
         return
     team.position = teamPos
-    await utils.send_msg(ctx, msg='Enter the description/explanation for the team')
+    title = await utils.send_msg(ctx, msg='Enter the description/explanation for the team')
     desc = await utils.getMsgFromUser(ctx, bot, timeout=120)
     if not desc or utils.cancelChecker(desc.content):
         await utils.send_cancel_msg(ctx)
         return
     if desc.content != 'skip':
         team.explanation = desc.content
+    await title.delete()
+    await desc.delete()
     teamPic = concatCharaPics(teamMembers)
     outputChannel = bot.get_channel(picChannelId)
     pic = await utils.send_img(ctx, teamPic, channel=outputChannel)

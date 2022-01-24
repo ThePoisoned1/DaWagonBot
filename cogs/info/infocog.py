@@ -40,6 +40,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
     async def teamInfo(self, ctx, *teamName):
         if isinstance(teamName, (list, tuple)):
             teamName = ' '.join(teamName)
+        print(teamName)
         team = None
         matches = infocommands.teamSearch(self.con, teamName)
         if len(matches) == 1:
@@ -120,6 +121,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
     async def editTeam(self, ctx, *teamName):
         if isinstance(teamName, (list, tuple)):
             teamName = ' '.join(teamName)
+        print(teamName)
         team = await self.teamInfo(ctx, teamName)
         if not team:
             return
@@ -128,7 +130,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
             embed = infocommands.getTeamEmbed(self.con, team)
             await utils.send_embed(ctx, embed)
             msg = f'The team ***{team.name}*** will be edited into the shown data. All good?'
-            confirmation = infocommands.condition_accepted(ctx, self.bot, msg)
+            confirmation = await infocommands.condition_accepted(ctx, self.bot, msg)
             if confirmation:
                 infocommands.edit_team_in_db(self.con, team)
                 await utils.send_embed(ctx, utils.successEmbed('Team edited'))
