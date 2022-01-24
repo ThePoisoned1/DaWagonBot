@@ -209,11 +209,11 @@ class Team():
     otherNames: list = field(default_factory=list)
 
     def is_valid_team_positions(self, position):
-        return position in ['Offense', 'Defense']
+        return position in self.get_valid_team_postions()
 
     @staticmethod
     def get_valid_team_postions():
-        return ['Offense', 'Defense']
+        return ['Offense', 'Defense', 'Einek', 'Kelak', 'Akumu', 'Belgius', 'PvP']
 
     def get_guild_wars_positions():
         return ['Offense', 'Defense']

@@ -188,7 +188,7 @@ def chara_name_is_unique(con, charaName):
 
 
 async def get_team_name(ctx, bot, con, edit=False, origName=None):
-    await utils.send_embed(ctx, utils.info_embed('Enter the team name'))
+    title = await utils.send_embed(ctx, utils.info_embed('Enter the team name'))
     acceptedName = False
     teamName = None
     while not acceptedName:
@@ -201,23 +201,33 @@ async def get_team_name(ctx, bot, con, edit=False, origName=None):
         teamName = msg.content
         acceptedName = team_name_is_unique(con, teamName)
         if not acceptedName:
-            await utils.send_msg(ctx, msg='The team name already exists')
+            await utils.send_msg(ctx, msg='The team name already exists', delete_after=5)
+    await title.delete()
+    await msg.delete()
     return teamName
 
 
 async def get_team_units(ctx, bot, con, replacements=False, cantBe: str = None, edit=False, orgTeam=None):
     acceptedUnits = False
     acceptedCharas = []
+    title = await utils.send_embed(ctx, utils.info_embed('.'))
     while not acceptedUnits:
-        await utils.send_embed(ctx, utils.info_embed('Enter the unit names, separated by commas (,)'))
+        await title.edit(embed=utils.info_embed('Enter the unit names, separated by commas (,)'))
         msg = await utils.getMsgFromUser(ctx, bot)
-        if not msg or (utils.cancelChecker(msg.content) or (replacements and utils.cancelChecker(msg.content, cancelstr='skip'))):
+        if not msg or utils.cancelChecker(msg.content) or (replacements and (utils.cancelChecker(msg.content, cancelstr='skip') or utils.cancelChecker(msg.content, cancelstr='skipall'))):
             if not replacements:
                 await utils.send_cancel_msg(ctx)
+            else:
+                await msg.delete()
+                await title.delete()
             return
         if edit and msg.content == 'skip':
-            return [characterSearch(con, orgName)[0] for orgName in orgTeam]
+            acceptedCharas = [characterSearch(
+                con, orgName)[0] for orgName in orgTeam]
+            await msg.delete()
+            break
         charaNames = msg.content.split(',')
+        await msg.delete()
         charaNames = [chara.strip() for chara in charaNames]
         rejected = []
         needExpecicifation = False
@@ -227,37 +237,41 @@ async def get_team_units(ctx, bot, con, replacements=False, cantBe: str = None, 
                 rejected.append(charaName)
             elif len(matches) == 1:
                 if replacements and cantBe and matches[0].name == cantBe:
-                    await utils.send_embed(ctx, utils.errorEmbed('The chara can\'t substitute itself'))
+                    await utils.send_embed(ctx, utils.errorEmbed('The chara can\'t substitute itself'), delete_after=5)
                     rejected.append(charaName)
                 elif not matches[0].name in [chara.name for chara in acceptedCharas]:
                     acceptedCharas.append(matches[0])
             else:
                 needExpecicifation = True
-                await utils.send_msg(ctx, msg=f'Multiple results were found for {charaName} Try again with one of the options bellow')
-                await utils.send_embed(ctx, searchResultEmbed(matches, charaName))
+                await utils.send_msg(ctx, msg=f'Multiple results were found for {charaName} Try again with one of the options bellow', delete_after=5)
+                await utils.send_embed(ctx, searchResultEmbed(matches, charaName), delete_after=5)
         acceptedUnits = len(rejected) == 0 and not needExpecicifation
         if not acceptedUnits:
-            await utils.send_msg(ctx, msg='Some of the characters failed to be accepted. You can try again')
+            await utils.send_msg(ctx, msg='Some of the characters failed to be accepted. You can try again', delete_after=5)
             acceptedNames = ', '.join(
                 [accepted.names[0] for accepted in acceptedCharas])
             if acceptedNames:
-                await utils.send_embed(ctx, utils.successEmbed(acceptedNames))
+                await utils.send_embed(ctx, utils.successEmbed(acceptedNames), delete_after=5)
             rejectedNames = ', '.join(rejected)
             if rejectedNames:
-                await utils.send_embed(ctx, utils.errorEmbed(rejectedNames))
+                await utils.send_embed(ctx, utils.errorEmbed(rejectedNames), delete_after=5)
+
+    await title.delete()
     return acceptedCharas
 
 
 async def get_team_replacements(ctx, bot, con, mainCharas):
-    await utils.send_embed(ctx, utils.info_embed('Time to enter the replacements for the characters in the team'))
+    title = await utils.send_embed(ctx, utils.info_embed('Time to enter the replacements for the characters in the team'))
     reaplacementsFinal = {}
-    msg = utils.send_embed(ctx,utils.info_embed('.'))
+    replacement = await utils.send_embed(ctx, embed=utils.info_embed('.'))
     for chara in mainCharas:
-        await utils.send_embed(ctx, embed=utils.info_embed(f'Replacements for **{chara.names[0]}** ("skip" to set no replacements)'))
-        reaplacements = await get_team_units(ctx, bot, con, replacements=True, cantBe=chara.name)
-        if reaplacements:
+        await replacement.edit(embed=utils.info_embed(f'Replacements for **{chara.names[0]}** ("skip" to set no replacements)'))
+        replacements = await get_team_units(ctx, bot, con, replacements=True, cantBe=chara.name)
+        if replacements:
             reaplacementsFinal[chara.name] = [
-                replacement.name for replacement in reaplacements]
+                replacement.name for replacement in replacements]
+    await title.delete()
+    await replacement.delete()
     return reaplacementsFinal
 
 
@@ -265,8 +279,9 @@ async def get_team_position(ctx, bot, edit=False, origPos=None):
     accepted = False
     options = ', '.join(gcObjects.Team.get_valid_team_postions())
     positions = []
+    title = await utils.send_embed(ctx, embed=utils.info_embed('.'))
     while not accepted:
-        await utils.send_msg(ctx, msg=f'Enter the team poistions separated by a comma ({options})')
+        await title.edit(embed=utils.info_embed(f'Enter the team poistions separated by a comma ({options})'))
         msg = await utils.getMsgFromUser(ctx, bot)
         if not msg or utils.cancelChecker(msg.content):
             await utils.send_cancel_msg(ctx)
@@ -278,12 +293,14 @@ async def get_team_position(ctx, bot, edit=False, origPos=None):
         accepted = not any(
             [position not in gcObjects.Team.get_valid_team_postions() for position in positions])
         if not accepted:
-            await utils.send_msg('One or more of the positions were not accepted, type them again')
+            await utils.send_msg('One or more of the positions were not accepted, type them again', delete_after=5)
+    await title.delete()
+    await msg.delete()
     return positions
 
 
 async def get_team_extra_names(ctx, bot, con):
-    await utils.send_embed(ctx, utils.info_embed('Extra names for the team. "skip" to not set any'))
+    title = await utils.send_embed(ctx, utils.info_embed('Extra names for the team. "skip" to not set any'))
     acceptedName = False
     acceptedNames = []
     while not acceptedName:
@@ -307,9 +324,11 @@ async def get_team_extra_names(ctx, bot, con):
         acceptedName = len(rejectedNames) < 1
         if not acceptedName:
             if len(acceptedNames) > 0:
-                await utils.send_embed(ctx, utils.successEmbed(', '.join(acceptedNames)))
-            await utils.send_embed(ctx, utils.errorEmbed(', '.join(rejectedNames)))
+                await utils.send_embed(ctx, utils.successEmbed(', '.join(acceptedNames)), delete_after=5)
+            await utils.send_embed(ctx, utils.errorEmbed(', '.join(rejectedNames)), delete_after=5)
             await utils.send_msg(ctx, msg='Some of the names didn\'t go through. You can type "skip" to not add any more names')
+    await title.delete()
+    await msg.delete()
     return acceptedNames if len(acceptedNames) > 0 else None
 
 
@@ -331,12 +350,15 @@ async def create_team(ctx, bot, con, picChannelId):
     if not teamPos:
         return
     newTeam.position = teamPos
-    await utils.send_msg(ctx, msg='Enter the description/explanation for the team')
+    title = await utils.send_msg(ctx, msg='Enter the description/explanation for the team')
     desc = await utils.getMsgFromUser(ctx, bot, timeout=120)
     if not desc or utils.cancelChecker(desc.content):
         await utils.send_cancel_msg(ctx)
         return
     newTeam.explanation = desc.content
+    await title.delete()
+    print(desc)
+    await desc.delete()
     teamPic = concatCharaPics(teamMembers)
     outputChannel = bot.get_channel(picChannelId)
     pic = await utils.send_img(ctx, teamPic, channel=outputChannel)

@@ -44,7 +44,8 @@ async def send_msg(ctx, msg=None, view=None,delete_after=None):
     if not msg:
         msg = f"Hey, seems like I can't send any message in {ctx.channel.name} on {ctx.guild.name}"
     try:
-        await ctx.send(msg, view=view,delete_after=delete_after)
+        msg = await ctx.send(msg, view=view,delete_after=delete_after)
+        return msg
     except Forbidden:
         await ctx.author.send(msg)
 
