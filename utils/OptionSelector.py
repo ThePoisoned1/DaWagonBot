@@ -46,17 +46,18 @@ async def option_selector(bot, ctx, options, title='Chose one of the options bel
             "reaction_add",
             timeout=timeout,
             check=lambda reaction, user: str(
-                reaction.emoji) in emojiOptions[:len(options)]
+                reaction.emoji) in emojiOptions[:len(options)]+[emojiCancel]
             and user.id != bot.user.id
             and reaction.message.id == msg.id
             and user.id == ctx.author.id
         )
     except asyncio.TimeoutError:
-        pass
+        await utils.clearReactions(msg, embed)
     else:
         if accept and emojiAccept == str(reaction.emoji):
             chosen = -1
         elif str(reaction.emoji) != emojiCancel:
             chosen = getEmojiValue(str(reaction.emoji))
-    await utils.clearReactions(msg, embed)
+        else:
+            await utils.clearReactions(msg, embed, timedOut=False)
     return chosen, msg

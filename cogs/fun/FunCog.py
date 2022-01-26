@@ -1,9 +1,9 @@
-from datetime import datetime
-import imp
+from pprint import pprint
 import discord
 from discord.ext import commands
 from utils import utils
 from . import RandomCommands
+from datetime import timedelta, datetime
 
 
 class FunCog(commands.Cog, name="Fun"):
@@ -32,7 +32,16 @@ class FunCog(commands.Cog, name="Fun"):
 
     @commands.Cog.listener()
     async def on_message_delete(self, message: discord.Message):
-        self.snipedMsgs[message.guild.id] = message
+        if not message.author.bot:
+            # logs = message.guild.audit_logs(action=discord.AuditLogAction.message_delete,after=datetime.utcnow() - timedelta(seconds=1.5),oldest_first=False)
+            # passes=True
+            # async for entry in logs:
+            #     if entry.target.id == message.author.id:
+            #         passes = False
+            #         break
+            # if passes:
+            #     self.snipedMsgs[message.guild.id] = message
+            self.snipedMsgs[message.guild.id] = message
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):

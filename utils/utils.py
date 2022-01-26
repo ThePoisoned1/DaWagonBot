@@ -1,4 +1,3 @@
-from discord import file
 from discord.errors import Forbidden
 import discord
 import asyncio
@@ -81,11 +80,14 @@ def removeMatches(theList, toDelete):
     return newList
 
 
-async def clearReactions(msg, embed):
-    embed.set_footer(text="Timed Out!")
-    await msg.edit(embed=embed)
-    await msg.clear_reactions()
-
+async def clearReactions(msg, embed,timedOut=True):
+    try:
+        if timedOut:
+            embed.set_footer(text="Timed Out!")
+        await msg.edit(embed=embed)
+        await msg.clear_reactions()
+    except:
+        pass
 
 async def elementsInPages(bot, ctx, elementEmbeds):
     if len(elementEmbeds) == 1:
