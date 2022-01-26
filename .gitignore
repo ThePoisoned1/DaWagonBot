@@ -3,10 +3,9 @@ logs/
 .vscode/
 ./conf
 *conf
-*.sqlite3
-conf-pro.conf
 infocogconf.py
 susGuildIds.py
+*.sqlite3
 file.png
 # Byte-compiled / optimized / DLL files
 __pycache__/
