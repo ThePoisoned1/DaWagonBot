@@ -6,6 +6,7 @@ logs/
 *.sqlite3
 conf-pro.conf
 infocogconf.py
+susGuildIds.py
 file.png
 # Byte-compiled / optimized / DLL files
 __pycache__/

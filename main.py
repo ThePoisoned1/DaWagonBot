@@ -27,7 +27,7 @@ def addCogs(bot, conf, con):
     bot.add_cog(infocog.InfoCog(bot, con, conf['pictures']['channel_id']))
     bot.add_cog(dastuffcog.DaStuffCog(bot, con, conf))
     bot.add_cog(helpcog.HelpCog(bot, conf['bot']))
-    bot.add_cog(FunCog.FunCog(bot))
+    bot.add_cog(FunCog.FunCog(bot,conf['bot']['prefix'],conf['bot']['id']))
     bot.add_cog(gamescog.GamesCog(bot))
 
 
