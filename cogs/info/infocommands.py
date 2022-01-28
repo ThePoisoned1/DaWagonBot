@@ -1,4 +1,5 @@
 from types import new_class
+from unicodedata import name
 import cv2
 import discord
 from utils import databaseUtils, utils, OptionSelector
@@ -369,7 +370,8 @@ async def create_team(ctx, bot, con, picChannelId):
     return newTeam
 
 
-async def edit_team(ctx, bot, con, picChannelId, team):
+async def edit_team(ctx, bot, con, picChannelId, teamToEdit:gcObjects.Team):
+    team = gcObjects.Team(name=teamToEdit.name,unitNames=teamToEdit.unitNames,position=teamToEdit.position,explanation=teamToEdit.explanation,replacements=teamToEdit.replacements,picUrl=teamToEdit.picUrl,otherNames=teamToEdit.otherNames)
     await utils.send_embed(ctx, utils.info_embed('Editing the team, type "cancel" to stop or "skip" to not change that '))
     teamName = await get_team_name(ctx, bot, con, edit=True, origName=team.name)
     if not teamName:

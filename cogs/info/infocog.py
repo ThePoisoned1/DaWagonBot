@@ -121,10 +121,10 @@ class InfoCog(commands.Cog, name="GcInfo"):
     async def editTeam(self, ctx, *teamName):
         if isinstance(teamName, (list, tuple)):
             teamName = ' '.join(teamName)
-        print(teamName)
         team = await self.teamInfo(ctx, teamName)
         if not team:
             return
+        
         team = await infocommands.edit_team(ctx, self.bot, self.con, self.picChannelId, team)
         if team:
             embed = infocommands.getTeamEmbed(self.con, team)
