@@ -297,7 +297,7 @@ async def get_team_position(ctx, bot, edit=False, origPos=None):
         accepted = not any(
             [position not in gcObjects.Team.get_valid_team_postions() for position in positions])
         if not accepted:
-            await utils.send_msg('One or more of the positions were not accepted, type them again', delete_after=5)
+            await utils.send_msg(ctx,msg='One or more of the positions were not accepted, type them again', delete_after=5)
     await title.delete()
     await msg.delete()
     return positions

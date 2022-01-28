@@ -1,6 +1,7 @@
 from pprint import pprint
-from utils import databaseUtils, gcDatabaseWebScrapper
-from usefullobjects import objectParser
+from typing import List
+from utils import databaseUtils, gcDatabaseWebScrapper,utils
+from usefullobjects import objectParser,gcObjects
 
 
 def update_names_on_chara(con, charaId, newNames: list):
@@ -93,10 +94,23 @@ def get_update_charas_list(oldCharas, updateCharas):
     return toUpdate, updateDict
 
 
+def fixes_cuz_db_kekega(charas:List[gcObjects.Character]):
+    for chara in charas:
+        if chara.name == 'howzer4':
+            chara.attribute = 'Speed'
+            chara.names[0]='bHowzer'
+        elif chara.name == 'howzer2':
+            chara.names[0]='bSRHowzer'
+        elif chara.name == 'blessing_of_earth_diane1':
+            chara.imageUrl='https://gcdatabase.com/images/characters/blessing_of_earth_diane/ssrg_portrait.png'
+            chara.binImg = utils.downloadImgFromUrl(chara.imageUrl)
+    return charas
+
 def run_chara_update(con, baseUrl):
     charaUrls = gcDatabaseWebScrapper.getCharaUrls(baseUrl+'/characters')
     charas = [gcDatabaseWebScrapper.getCharaDataFromUrl(
         f'{baseUrl}/{charaUrl}') for charaUrl in charaUrls]
+    charas = fixes_cuz_db_kekega(charas)
     currentCharas = databaseUtils.select(con, 'chara')
     currentCharas = [objectParser.dbCharaToObj(
         dbChara) for dbChara in currentCharas]

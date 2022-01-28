@@ -52,26 +52,31 @@ def getSkillMultiplier(line):
 def getSkillEffects(line, rawLine):
     regex = '<b style="color:#00d4fe">[A-Za-z ()-]+</b>'
     extraRejexes = {
-        'of diminished HP': 'Restores dimished HP',
-        '[d|D]epletes Ultimate Move Gauge': 'Depletes orbs (end of turn)',
-        '[d|D]epletes the Ultimate Move Gauge': 'Depletes orbs',
-        '>Evasion<': 'Evasion',
-        '[h|H]eals HP': 'Heal',
-        'Recovers HP': 'Recovers HP',
-        '[d|D]isables everything including Ultimate Moves except for Debuff Skills': 'Disables everything but Debuff Skills',
-        '[d|D]isables Rank 2 and above': 'Disables Rank 2+',
-        'Removes Debuffs': 'Removes Debuffs',
-        '[C|c]ounter': 'Counter',
-        'Attack when taking attacks': 'Counter',
+        r'of diminished HP': 'Restores dimished HP',
+        r'depletes Ultimate Move Gauge': 'Depletes orbs (end of turn)',
+        r'depletes the Ultimate Move Gauge': 'Depletes orbs',
+        r'>Evasion<': 'Evasion',
+        r'heals( diminished)? HP': 'Heal',
+        r'Recovers HP': 'Recovers HP',
+        r'disables everything including Ultimate Moves except for Debuff Skills': 'Disables everything but Debuff Skills',
+        r'disables Rank 2 and above': 'Disables Rank 2+',
+        r'Removes Debuffs': 'Removes Debuffs',
+        r'counter': 'Counter',
+        r'Attack when taking attacks': 'Counter',
+        r'damage dealt by':'Damage dealt',
+        r'Allows the use of only Rank 1 Skills': 'Only Rank 1 Skills',
+        r'reduces the final damage taken':'Reduces allies damage taken',
+        r'restores the HP of all allies by':'Restores HP'
     }
     incDecRejexes = {
-        'Skill Ranks': 'Skill Rank',
-        'Max HP by': 'HP',
-        'Ultimate Move damage': 'Ultimate Move damage',
-        '[A|a]ll [S|s]tats': 'All stats',
-        '[Iin|Dde]creases damage': 'Damage',
-        'Crit Resistance': 'Crit Resistance',
-        'Crit Defense': 'Crit Defense'
+        r'Skill Ranks': 'Skill Rank',
+        r'Max HP by': 'HP',
+        r'Max HP of the hero by':'own HP',
+        r'Ultimate Move damage': 'Ultimate Move damage',
+        r'all stats': 'All stats',
+        r'[in|de]creases damage': 'Damage',
+        r'Crit Resistance': 'Crit Resistance',
+        r'Crit Defense': 'Crit Defense'
 
     }
     out = []
@@ -87,10 +92,11 @@ def getSkillEffects(line, rawLine):
                 toAdd = 'Shield'
             out.append(toAdd)
     for extraRegex, val in extraRejexes.items():
-        if len(re.findall(extraRegex, rawLine)) > 0:
-            out.append(val)
+        if len(re.findall(extraRegex, rawLine,flags=re.IGNORECASE)) > 0:
+            if not (extraRegex == 'Removes Debuffs' and 'Removes Debuffs' in out):
+                out.append(val)
     for incDecRejexe, val in incDecRejexes.items():
-        if len(re.findall(incDecRejexe, rawLine)) > 0:
+        if len(re.findall(incDecRejexe, rawLine,flags=re.IGNORECASE)) > 0:
             out.insert(0, val)
     return out
 
@@ -165,6 +171,15 @@ def get_chara_real_name(charaId):
             return name
     print('PEPEGA', charaId)
 
+def fixes_cuz_db_kekega(chara:Character):
+    if chara.name == 'howzer4':
+        chara.attribute = 'Speed'
+        chara.names[0]='bHowzer'
+    elif chara.name == 'howzer2':
+        chara.names[0]='bSRHowzer'
+    elif chara.name == 'blessing_of_earth_diane1':
+        chara.imageUrl='https://gcdatabase.com/images/characters/blessing_of_earth_diane/ssrg_portrait.png'
+    return chara
 
 def getCharaDataFromUrl(url):
     baseUrl = '/'.join(url.split('/')[:3])
@@ -188,8 +203,6 @@ def getCharaDataFromUrl(url):
     chara.race = getInfoFromHtmlLine(data[5].img, races)
     chara.imageUrl = baseUrl + '/' + \
         page.find_all('img')[0].get('src').replace('../', '')
-    if chara.name == 'blessing_of_earth_diane1':
-        chara.imageUrl = './imgs/ssrg_portrait.png'
     # first name
     color = charaNames.attributeColors[chara.attribute]
     fName = utils.camel_case(f'{color[0].lower()} {chara.name[:-1]}')
@@ -226,12 +239,8 @@ def getCharaDataFromUrl(url):
     if any(header.text == 'Grace' for header in page.find_all("h2", class_="whitetext")):
         chara.grace = result[pos].find_all('td')[0].text
     chara.charaUrl = url
-    if chara.name == 'blessing_of_earth_diane1':
-        img = cv2.imread(chara.imageUrl)
-        binStr = cv2.imencode('.png', img)[1].tostring()
-        chara.binImg = binStr
-    else:
-        chara.binImg = utils.downloadImgFromUrl(chara.imageUrl)
+    chara = fixes_cuz_db_kekega(chara)
+    chara.binImg = utils.downloadImgFromUrl(chara.imageUrl)    
     return chara
 
 
