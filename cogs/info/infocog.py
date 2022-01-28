@@ -131,7 +131,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
             await utils.send_embed(ctx, embed)
             msg = f'The team ***{team.name}*** will be edited into the shown data. All good?'
             confirmation = await infocommands.condition_accepted(ctx, self.bot, msg)
-            if confirmation:
+            if confirmation == True:
                 infocommands.edit_team_in_db(self.con, team)
                 await utils.send_embed(ctx, utils.successEmbed('Team edited'))
             else:
@@ -220,11 +220,11 @@ class InfoCog(commands.Cog, name="GcInfo"):
         if infocommands.fix_chara_names(self.con):
             await utils.send_embed(ctx, utils.successEmbed('Finished Fixing'))
 
-    @commands.command(name="randomTeam", aliases=['rteam', 'ranteam'],brief='(numRerolls)', pass_context=True, description=descriptions.get('randomTeam'))
+    @commands.command(name="randomTeam", aliases=['rteam', 'ranteam'], brief='(numRerolls)', pass_context=True, description=descriptions.get('randomTeam'))
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def randomTeam(self, ctx, rerolls: int = 0):
         if rerolls > 7:
-            await utils.send_embed(ctx,embed=utils.errorEmbed('Thats a bit to much ma boi'))
+            await utils.send_embed(ctx, embed=utils.errorEmbed('Thats a bit to much ma boi'))
             return
         randTeam, queue = infocommands.get_random_team(
             self.con, rerollable=True)
@@ -278,7 +278,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
         confirmation = await infocommands.condition_accepted(ctx, self.bot, msg)
         if confirmation:
             for gear in gearToDelete:
-                infocommands.del_chara_gear(self.con,chara,gear)
+                infocommands.del_chara_gear(self.con, chara, gear)
             await utils.send_embed(ctx, utils.successEmbed('Gear Deleted'))
         else:
             await utils.send_cancel_msg(ctx)
