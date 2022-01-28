@@ -27,6 +27,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
         descriptions['randomTeam'] = 'Gives you a random team with 4 units'
         descriptions['randomUnit'] = 'Gives you a random unit or the specified ammount of them'
         descriptions['deleteGear'] = 'Removes a gear from the specified unit'
+        descriptions['delTeam']= 'Removes a team from the database'
         return descriptions
 
     descriptions = getDescriptions()
@@ -40,7 +41,6 @@ class InfoCog(commands.Cog, name="GcInfo"):
     async def teamInfo(self, ctx, *teamName):
         if isinstance(teamName, (list, tuple)):
             teamName = ' '.join(teamName)
-        print(teamName)
         team = None
         matches = infocommands.teamSearch(self.con, teamName)
         if len(matches) == 1:
@@ -134,6 +134,21 @@ class InfoCog(commands.Cog, name="GcInfo"):
             if confirmation == True:
                 infocommands.edit_team_in_db(self.con, team)
                 await utils.send_embed(ctx, utils.successEmbed('Team edited'))
+            else:
+                await utils.send_cancel_msg(ctx)
+
+    @commands.command(name="delTeam", pass_context=True, brief="<teamName>", description=descriptions.get('delTeam'))
+    @commands.check_any(userInAuthPpl, commands.has_any_role(*infocogconf.editRoles.values()))
+    async def del_team(self, ctx, *teamName):
+        if isinstance(teamName, (list, tuple)):
+            teamName = ' '.join(teamName)
+        team = await self.teamInfo(ctx, teamName)
+        if team:
+            msg = f'The team ***{team.name}*** will be DELETED. All good?'
+            confirmation = await infocommands.condition_accepted(ctx, self.bot, msg)
+            if confirmation == True:
+                infocommands.delete_team_on_db(self.con, team)
+                await utils.send_embed(ctx, utils.successEmbed('Team removed'))
             else:
                 await utils.send_cancel_msg(ctx)
 

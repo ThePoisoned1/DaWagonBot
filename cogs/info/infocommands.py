@@ -298,7 +298,7 @@ async def get_team_position(ctx, bot, edit=False, origPos=None):
         accepted = not any(
             [position not in gcObjects.Team.get_valid_team_postions() for position in positions])
         if not accepted:
-            await utils.send_msg(ctx,msg='One or more of the positions were not accepted, type them again', delete_after=5)
+            await utils.send_msg(ctx, msg='One or more of the positions were not accepted, type them again', delete_after=5)
     await title.delete()
     await msg.delete()
     return positions
@@ -370,13 +370,10 @@ async def create_team(ctx, bot, con, picChannelId):
     return newTeam
 
 
-async def edit_team(ctx, bot, con, picChannelId, teamToEdit:gcObjects.Team):
-    team = gcObjects.Team(name=teamToEdit.name,unitNames=teamToEdit.unitNames,position=teamToEdit.position,explanation=teamToEdit.explanation,replacements=teamToEdit.replacements,picUrl=teamToEdit.picUrl,otherNames=teamToEdit.otherNames)
+async def edit_team(ctx, bot, con, picChannelId, teamToEdit: gcObjects.Team):
+    team = gcObjects.Team(name=teamToEdit.name, unitNames=teamToEdit.unitNames, position=teamToEdit.position,
+                          explanation=teamToEdit.explanation, replacements=teamToEdit.replacements, picUrl=teamToEdit.picUrl, otherNames=teamToEdit.otherNames)
     await utils.send_embed(ctx, utils.info_embed('Editing the team, type "cancel" to stop or "skip" to not change that '))
-    teamName = await get_team_name(ctx, bot, con, edit=True, origName=team.name)
-    if not teamName:
-        return
-    team.name = teamName
     extraNames = await get_team_extra_names(ctx, bot, con)
     if extraNames:
         team.otherNames = extraNames
@@ -765,6 +762,9 @@ def add_team_to_db(con, team):
     customInteractions.insert_team(con, team)
     updateBuffer(con)
 
+def delete_team_on_db(con,team):
+    customInteractions.delete_team(con, team.name)
+    updateBuffer(con)
 
 def edit_team_in_db(con, team):
     customInteractions.delete_team(con, team.name)
