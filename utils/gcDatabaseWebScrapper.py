@@ -63,7 +63,6 @@ def getSkillEffects(line, rawLine):
         r'Removes Debuffs': 'Removes Debuffs',
         r'counter': 'Counter',
         r'Attack when taking attacks': 'Counter',
-        r'damage dealt by':'Damage dealt',
         r'Allows the use of only Rank 1 Skills': 'Only Rank 1 Skills',
         r'reduces the final damage taken':'Reduces allies damage taken',
         r'restores the HP of all allies by':'Restores HP'
@@ -74,9 +73,9 @@ def getSkillEffects(line, rawLine):
         r'Max HP of the hero by':'own HP',
         r'Ultimate Move damage': 'Ultimate Move damage',
         r'all stats': 'All stats',
-        r'[in|de]creases damage': 'Damage',
         r'Crit Resistance': 'Crit Resistance',
-        r'Crit Defense': 'Crit Defense'
+        r'Crit Defense': 'Crit Defense',
+        r'damage dealt by':'Damage dealt',
 
     }
     out = []
@@ -90,11 +89,13 @@ def getSkillEffects(line, rawLine):
                 toAdd = 'Fills orbs'
             elif toAdd == '(Excludes Rupture)':
                 toAdd = 'Shield'
-            out.append(toAdd)
+            if effect not in toAdd:
+                out.append(toAdd)
     for extraRegex, val in extraRejexes.items():
         if len(re.findall(extraRegex, rawLine,flags=re.IGNORECASE)) > 0:
             if not (extraRegex == 'Removes Debuffs' and 'Removes Debuffs' in out):
                 out.append(val)
+    out=list(set(out))
     for incDecRejexe, val in incDecRejexes.items():
         if len(re.findall(incDecRejexe, rawLine,flags=re.IGNORECASE)) > 0:
             out.insert(0, val)
