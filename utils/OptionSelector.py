@@ -60,5 +60,8 @@ async def option_selector(bot, ctx, options, title='Chose one of the options bel
             chosen = getEmojiValue(str(reaction.emoji))
         else:
             await utils.clearReactions(msg, embed, timedOut=False)
-    await reaction.remove()
+        if msg:
+            await msg.clear_reactions()
+        else:
+            await reaction.remove(user)
     return chosen, msg
