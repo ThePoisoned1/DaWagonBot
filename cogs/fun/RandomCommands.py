@@ -58,6 +58,7 @@ def sus():
         'https://cdn.discordapp.com/attachments/832316966714212352/936023966001291304/ezgif-5-88bb9a44c5.gif',
         'https://cdn.discordapp.com/attachments/832316966714212352/935953743709601792/unknown.png',
         'https://cdn.discordapp.com/attachments/832316966714212352/935952499515478106/unknown.png',
-        'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/f4d35c9b-436c-42b3-9286-41af3f78b828/dee9sqs-9d29c37a-0f0a-4e96-a62b-f78550513770.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2Y0ZDM1YzliLTQzNmMtNDJiMy05Mjg2LTQxYWYzZjc4YjgyOFwvZGVlOXNxcy05ZDI5YzM3YS0wZjBhLTRlOTYtYTYyYi1mNzg1NTA1MTM3NzAuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.hnJpwdr9maSezysGRKHP_axzvuPkI_BB296M2Hq8GOo'
+        'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/f4d35c9b-436c-42b3-9286-41af3f78b828/dee9sqs-9d29c37a-0f0a-4e96-a62b-f78550513770.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2Y0ZDM1YzliLTQzNmMtNDJiMy05Mjg2LTQxYWYzZjc4YjgyOFwvZGVlOXNxcy05ZDI5YzM3YS0wZjBhLTRlOTYtYTYyYi1mNzg1NTA1MTM3NzAuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.hnJpwdr9maSezysGRKHP_axzvuPkI_BB296M2Hq8GOo',
+	'https://cdn.discordapp.com/attachments/832316966714212352/937132635958960158/ezgif-5-06be9b2596.jpg'
     ]
     return random.choices(susPics)[0]
