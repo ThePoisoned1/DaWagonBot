@@ -459,7 +459,7 @@ async def get_gear_set_set(ctx, bot, msg):
             await utils.send_cancel_msg(ctx)
             return
         bonus = setsList[chosen]
-        if bonusSum + sets.get(bonus) <= 6 and bonus not in gearSets:
+        if bonusSum + sets.get(bonus) <= 6:
             gearSets.append(bonus)
             bonusSum += sets.get(bonus)
             setBonusNum += 1
