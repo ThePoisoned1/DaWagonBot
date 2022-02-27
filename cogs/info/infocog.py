@@ -3,6 +3,8 @@ from discord.ext import commands
 from . import infocogconf, infocommands
 from utils import utils
 from pprint import pprint
+import random
+import time
 
 
 class InfoCog(commands.Cog, name="GcInfo"):
@@ -27,7 +29,8 @@ class InfoCog(commands.Cog, name="GcInfo"):
         descriptions['randomTeam'] = 'Gives you a random team with 4 units'
         descriptions['randomUnit'] = 'Gives you a random unit or the specified ammount of them'
         descriptions['deleteGear'] = 'Removes a gear from the specified unit'
-        descriptions['delTeam']= 'Removes a team from the database'
+        descriptions['delTeam'] = 'Removes a team from the database'
+        descriptions['rollTournament'] = 'Rolls the teams for the tournament'
         return descriptions
 
     descriptions = getDescriptions()
@@ -124,7 +127,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
         team = await self.teamInfo(ctx, teamName)
         if not team:
             return
-        
+
         team = await infocommands.edit_team(ctx, self.bot, self.con, self.picChannelId, team)
         if team:
             embed = infocommands.getTeamEmbed(self.con, team)
@@ -297,6 +300,46 @@ class InfoCog(commands.Cog, name="GcInfo"):
             await utils.send_embed(ctx, utils.successEmbed('Gear Deleted'))
         else:
             await utils.send_cancel_msg(ctx)
+
+    @commands.command(name="rollTournament", aliases=['rollT', 'rollTeams'], pass_context=True, description=descriptions.get('rollTournament'))
+    @commands.check_any(commands.is_owner(), commands.has_any_role(*infocogconf.tournamentManagerRoles.values()))
+    async def rollTournament(self, ctx):
+        playerids = [data[0] for data in infocogconf.tourneyPool]
+        random.shuffle(playerids)
+        teamsToRoll = infocogconf.tourneyPool
+        random.shuffle(teamsToRoll)
+        embed = discord.Embed(title='Scam ready',description='Team pool shuffled, get ready for the scam. Your ream will be in a message after your mention',color=discord.Color.dark_blue())
+        await utils.send_embed(ctx,embed=embed)
+        while len(teamsToRoll) > 0:
+            aux = playerids.pop()
+            pullingFor = None
+            try:
+                pullingFor = await ctx.guild.fetch_member(aux)
+            except Exception:
+                pass
+            if pullingFor != None:
+                pullingFor = f"<@{aux}>"
+            else:
+                pullingFor = aux
+            await utils.send_msg(ctx, msg=f'Now rolling a team for {pullingFor}')
+            time.sleep(1)
+            pulled = teamsToRoll.pop()
+            submmittedby = None
+            try:
+                submmittedby = await ctx.guild.fetch_member(pulled[0])
+            except Exception:
+                pass
+            if submmittedby != None:
+                submmittedby = f"<@{pulled[0]}>"
+            else:
+                submmittedby = pulled[0]
+            embed = discord.Embed(title='Your team has arrived', color=discord.Color.blue())
+            embed.add_field(name='Submitter',value=submmittedby)
+            embed.set_image(url=pulled[1])
+            await utils.send_embed(ctx, embed=embed)
+            time.sleep(2)
+        embed = discord.Embed(title='Scam finished',description='Finished rolling hope u all got scammed',color=discord.Color.dark_blue())
+        await utils.send_embed(ctx,embed=embed)
 
 
 def setup(bot):
