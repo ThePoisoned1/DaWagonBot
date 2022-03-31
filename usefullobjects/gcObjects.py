@@ -178,6 +178,15 @@ class Skill():
         }
         return str(skillDict)
 
+    def __eq__(self, __o: object) -> bool:
+        if isinstance(__o, Skill):
+            return sorted(self.effects) == sorted(__o.effects)\
+                and self.isAoE == __o.isAoE\
+                and sorted(self.increasesDecresases) == sorted(__o.increasesDecresases)\
+                and self.skillType == __o.skillType
+        else:
+            return False
+
     def getSkillData(self):
         effects = ', '.join(self.effects)
         AoE = 'AoE' if self.isAoE else 'Single'

@@ -46,6 +46,7 @@ unitNames = {
     'Hendrickson': ['Hendrickson'],
     'Howzer': ['Howzer'],
     'Hugo': ['Hugo'],
+    'Jormungandr': ['Jormungandr'],
     'Jericho': ['Jericho'],
     'Jenna': ['Jenna'],
     'Jillian': ['Jillian'],

@@ -24,7 +24,7 @@ from database import startDatabase, customInteractions
 
 def addCogs(bot, conf, con):
     bot.add_cog(errorhandlercog.CommandErrorHandler(bot, conf['log']['path']))
-    bot.add_cog(infocog.InfoCog(bot, con, conf['pictures']['channel_id']))
+    bot.add_cog(infocog.InfoCog(bot, con, conf))
     bot.add_cog(dastuffcog.DaStuffCog(bot, con, conf))
     bot.add_cog(helpcog.HelpCog(bot, conf['bot']))
     bot.add_cog(FunCog.FunCog(bot,conf['bot']['prefix'],conf['bot']['id']))
@@ -68,7 +68,7 @@ def startBot(conf, update=False):
         return ';' not in ctx.message.content
     con = connectDb(conf['database'])
     if update:
-        customInteractions.run_chara_update(
+        updateEmbed = customInteractions.run_chara_update(
             con, conf['database']['chara_base_url'])
     addCogs(bot, conf, con)
     # start the bot

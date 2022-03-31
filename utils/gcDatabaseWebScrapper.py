@@ -126,17 +126,20 @@ def checkForSrSsr(allcharas):
     out = []
     moreThan3Charas = [chara.name[:-1]
                        for chara in allcharas if int(chara.name[-1]) > 3]
+    print(moreThan3Charas)
     for chara in allcharas:
         name = chara.name[:-1]
         outChara = chara
         if name in moreThan3Charas:
             atributes = [
                 chara.attribute for chara in allcharas if chara.name[:-1] == name]
+            print(atributes)
             if atributes.count(outChara.attribute) > 1 and outChara.rarity != 'SSR':
                 outChara.names[0] = outChara.names[0][0] + \
                     outChara.rarity+outChara.names[0][1:]
 
         out.append(outChara)
+    print(len(out))
     return out
 
 
@@ -176,10 +179,10 @@ def fixes_cuz_db_kekega(chara:Character):
     if chara.name == 'howzer4':
         chara.attribute = 'Speed'
         chara.names[0]='bHowzer'
-    elif chara.name == 'howzer2':
-        chara.names[0]='bSRHowzer'
     elif chara.name == 'blessing_of_earth_diane1':
         chara.imageUrl='https://gcdatabase.com/images/characters/blessing_of_earth_diane/ssrg_portrait.png'
+    elif chara.name == 'jormungandr1' or chara.name == 'awakened_lillia1':
+        chara.skills[0].isAoE=False
     return chara
 
 def getCharaDataFromUrl(url):

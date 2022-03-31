@@ -1,3 +1,4 @@
+import imp
 import discord
 from discord.ext import commands
 from . import infocogconf, infocommands
@@ -5,6 +6,7 @@ from utils import utils
 from pprint import pprint
 import random
 import time
+from database import customInteractions
 
 
 class InfoCog(commands.Cog, name="GcInfo"):
@@ -12,10 +14,11 @@ class InfoCog(commands.Cog, name="GcInfo"):
     Info about characters and teams in 7DSGC
     """
 
-    def __init__(self, bot, con, picChanelId):
+    def __init__(self, bot, con,conf):
         self.bot = bot
         self.con = con
-        self.picChannelId = int(picChanelId)
+        self.conf = conf
+        self.picChannelId = int(conf['pictures']['channel_id'])
 
     def getDescriptions():
         descriptions = {}
@@ -203,6 +206,13 @@ class InfoCog(commands.Cog, name="GcInfo"):
         img = await utils.send_img(ctx, img)
         # await utils.send_msg(ctx, img.attachments[0].url)
 
+    @commands.command(name="update", pass_context=True, hidden=True)
+    @commands.is_owner()
+    async def update(self, ctx):
+        msg = await utils.send_embed(ctx,utils.info_embed('Updating'))
+        updateEmbed = customInteractions.run_chara_update(
+            self.con, self.conf['database']['chara_base_url'])
+        await msg.edit(embed=updateEmbed)
     @commands.command(name="chadGearAdd", pass_context=True, hidden=True)
     @commands.is_owner()
     async def chadGearAdd(self, ctx, defaultGear):
