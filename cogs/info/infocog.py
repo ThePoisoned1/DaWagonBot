@@ -308,8 +308,9 @@ class InfoCog(commands.Cog, name="GcInfo"):
         random.shuffle(playerids)
         teamsToRoll = infocogconf.tourneyPool
         random.shuffle(teamsToRoll)
-        embed = discord.Embed(title='Scam ready',description='Team pool shuffled, get ready for the scam. Your ream will be in a message after your mention',color=discord.Color.dark_blue())
-        await utils.send_embed(ctx,embed=embed)
+        embed = discord.Embed(
+            title='Scam ready', description='Team pool shuffled, get ready for the scam. Your ream will be in a message after your mention', color=discord.Color.dark_blue())
+        await utils.send_embed(ctx, embed=embed)
         while len(teamsToRoll) > 0:
             aux = playerids.pop()
             pullingFor = None
@@ -333,13 +334,15 @@ class InfoCog(commands.Cog, name="GcInfo"):
                 submmittedby = f"<@{pulled[0]}>"
             else:
                 submmittedby = pulled[0]
-            embed = discord.Embed(title='Your team has arrived', color=discord.Color.blue())
-            embed.add_field(name='Submitter',value=submmittedby)
+            embed = discord.Embed(
+                title='Your team has arrived', color=discord.Color.blue())
+            embed.add_field(name='Submitter', value=submmittedby)
             embed.set_image(url=pulled[1])
             await utils.send_embed(ctx, embed=embed)
             time.sleep(2)
-        embed = discord.Embed(title='Scam finished',description='Finished rolling hope u all got scammed',color=discord.Color.dark_blue())
-        await utils.send_embed(ctx,embed=embed)
+        embed = discord.Embed(
+            title='Scam finished', description='Finished rolling hope u all got scammed', color=discord.Color.dark_blue())
+        await utils.send_embed(ctx, embed=embed)
 
 
 def setup(bot):
