@@ -236,12 +236,15 @@ def getCharaDataFromUrl(url):
     # holy relic
     if any(header.text == 'Holy Relic' for header in page.find_all("h2", class_="whitetext")):
         chara.relic = result[pos].find_all('td')[1].text
+        pos+=1
     # commandment
     if any(header.text == 'Commandment' for header in page.find_all("h2", class_="whitetext")):
         chara.commandment = result[pos].find_all('td')[0].text
+        pos+=1
     # grace
     if any(header.text == 'Grace' for header in page.find_all("h2", class_="whitetext")):
         chara.grace = result[pos].find_all('td')[0].text
+        pos+=1
     chara.charaUrl = url
     chara = fixes_cuz_db_kekega(chara)
     chara.binImg = utils.downloadImgFromUrl(chara.imageUrl)    
