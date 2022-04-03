@@ -74,7 +74,7 @@ def info_embed(title):
 def embed_from_dict(title:str,desc:str,data:dict):
     embed = discord.Embed(title=title,description=desc,color=discord.Color.blue())
     for key,val in data.items():
-        value = '\n-'.join(val) if isinstance(val,(tuple,list)) else val
+        value = '-'+'\n-'.join(val) if isinstance(val,(tuple,list)) else val
         embed.add_field(name=key,value=value,inline=False)
     return embed
 
