@@ -117,7 +117,7 @@ def isAoE(line):
     # (on|of)( all)?
     aoeRegexAllies = 'allies'
     aoeRegexEnemies = 'enemies'
-    if len(re.findall(aoeRegexAllies, line)) > 0 or len(re.findall(aoeRegexEnemies, line)) > 0:
+    if (len(re.findall(aoeRegexAllies, line)) > 0 or len(re.findall(aoeRegexEnemies, line)) > 0) and 'taunt' not in line.lower():
         return True
     return False
 
