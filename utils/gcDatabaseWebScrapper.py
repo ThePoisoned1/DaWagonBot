@@ -185,6 +185,14 @@ def fixes_cuz_db_kekega(chara:Character):
         chara.skills[0].isAoE=False
     return chara
 
+def get_atributes_order(data):
+    attrs = [x.text for x in data.find_all("h2", class_="whitetext")]
+    out = []
+    for att in attrs:
+        if any(att == aux for aux in ['Commandment','Grace','Holy Relic']) and att not in out:
+            out.append(att)
+    return out
+
 def getCharaDataFromUrl(url):
     baseUrl = '/'.join(url.split('/')[:3])
     page = getHTMLFromUrl(url)
@@ -233,18 +241,20 @@ def getCharaDataFromUrl(url):
         chara.passive += '\n------------------\n'
         chara.passive += pasiveData[0].text
         pos += 1
-    # holy relic
-    if any(header.text == 'Holy Relic' for header in page.find_all("h2", class_="whitetext")):
-        chara.relic = result[pos].find_all('td')[1].text
-        pos+=1
-    # commandment
-    if any(header.text == 'Commandment' for header in page.find_all("h2", class_="whitetext")):
-        chara.commandment = result[pos].find_all('td')[0].text
-        pos+=1
-    # grace
-    if any(header.text == 'Grace' for header in page.find_all("h2", class_="whitetext")):
-        chara.grace = result[pos].find_all('td')[0].text
-        pos+=1
+    atts = get_atributes_order(page)
+    for att in atts:
+        # commandment
+        if att == 'Commandment':
+            chara.commandment = result[pos].find_all('td')[0].text
+            pos+=1
+        # grace
+        elif att == 'Grace':
+            chara.grace = result[pos].find_all('td')[0].text
+            pos+=1
+        # holy relic
+        elif att =='Holy Relic':
+            chara.relic = result[pos].find_all('td')[1].text
+            pos+=1
     chara.charaUrl = url
     chara = fixes_cuz_db_kekega(chara)
     chara.binImg = utils.downloadImgFromUrl(chara.imageUrl)    
