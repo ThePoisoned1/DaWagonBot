@@ -75,7 +75,9 @@ def getSkillEffects(line, rawLine):
         r'all stats': 'All stats',
         r'Crit Resistance': 'Crit Resistance',
         r'Crit Defense': 'Crit Defense',
-        r'damage dealt by':'Damage dealt',
+        r'damage dealt':'Damage dealt',
+        r'damage taken':'Damage taken',
+        r'Attack of':'Attack',
 
     }
     out = []
@@ -97,7 +99,7 @@ def getSkillEffects(line, rawLine):
                 out.append(val)
     out=list(set(out))
     for incDecRejexe, val in incDecRejexes.items():
-        if len(re.findall(incDecRejexe, rawLine,flags=re.IGNORECASE)) > 0:
+        if val not in out and len(re.findall(incDecRejexe, rawLine,flags=re.IGNORECASE)) > 0:
             out.insert(0, val)
     return out
 
