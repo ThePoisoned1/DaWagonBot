@@ -91,6 +91,8 @@ def getSkillEffects(line, rawLine):
                 toAdd = 'Fills orbs'
             elif toAdd == '(Excludes Rupture)':
                 toAdd = 'Shield'
+            elif toAdd == 'Decreases skill ranks':
+                continue
             if effect not in toAdd:
                 out.append(toAdd)
     for extraRegex, val in extraRejexes.items():

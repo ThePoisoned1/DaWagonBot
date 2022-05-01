@@ -79,6 +79,7 @@ unitNames = {
     'Ruin': ['Ruin'],
     'Sariel': ['Sariel'],
     'Shin': ['Shin'],
+    'Shuna': ['Shuna'],
     'Simon': ['Simon'],
     'Sigurd': ['Sigurd'],
     'Skadi': ['Skadi'],
