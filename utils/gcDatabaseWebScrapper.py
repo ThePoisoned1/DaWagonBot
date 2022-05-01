@@ -91,8 +91,10 @@ def getSkillEffects(line, rawLine):
                 toAdd = 'Fills orbs'
             elif toAdd == '(Excludes Rupture)':
                 toAdd = 'Shield'
-            elif toAdd == 'Decreases skill ranks':
+            elif toAdd in ['Decreases skill ranks','(Excludes Stances and Recovery Skills)','(Excludes Stance and Recovery Skills)','(Excluding Stance and Recovery Skills)']:
                 continue
+            elif toAdd == ['Blocks all skill effects including those of Ultimate Moves','Blocks all enemies\' skill effects including those of Ultimate Moves']:
+                toAdd == 'Disable'
             if effect not in toAdd:
                 out.append(toAdd)
     for extraRegex, val in extraRejexes.items():
