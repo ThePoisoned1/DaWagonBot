@@ -109,5 +109,6 @@ attributeColors = {
     'Vitality': 'Green',
     'Strength': 'Red',
     'Speed': 'Blue',
-    'Dark': 'Dark'
+    'Dark': 'Dark',
+    'Light': 'Light'
 }

@@ -17,7 +17,8 @@ attributes = {
     'attribute_vitality': 'Vitality',
     'attribute_strength': 'Strength',
     'attribute_speed': 'Speed',
-    'attribute_dark': 'Dark'
+    'attribute_dark': 'Dark',
+    'attribute_light': 'Light'
 }
 races = {
     'race_human': 'Human',
