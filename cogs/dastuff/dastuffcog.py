@@ -1,6 +1,7 @@
 from discord.ext import commands
 from utils import utils, databaseUtils
 import os
+import discord
 import shutil
 from datetime import datetime
 
@@ -41,6 +42,7 @@ class DaStuffCog(commands.Cog, name="DaStuff"):
                     '.')[0]+'_'+str(datetime.utcnow().strftime('%Y%m%d_%H%M%S'))+'.sqlite3'
                 shutil.copy(os.path.join(fileFolder, file),
                             os.path.join(backupFolder, fileName))
+                await ctx.send(file=discord.File(os.path.join(backupFolder, fileName)))
         await utils.send_msg(ctx, msg='Backed up')
 
 
