@@ -1,3 +1,4 @@
+from pprint import pprint
 from discord.ext import commands
 from utils import utils, databaseUtils
 import os
@@ -27,7 +28,8 @@ class DaStuffCog(commands.Cog, name="DaStuff"):
     @commands.is_owner()
     async def shutdown(self, ctx, *sentence):
         sentence = ' '.join(sentence)
-        databaseUtils.customSQL(self.con, sentence)
+        msg = databaseUtils.customSQL(self.con, sentence)
+        pprint(msg)
 
     @commands.command(name="backup", pass_context=True, description="Backs up the dbs")
     @commands.is_owner()

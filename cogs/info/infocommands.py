@@ -730,6 +730,11 @@ def get_chara_from_id(con, charaId):
         if chara.name == charaId:
             return chara
 
+def update_bin_pic(con,chara):
+    chara.binImg = utils.downloadImgFromUrl(chara.imageUrl)
+    customInteractions.update_charas(con,[chara])
+    return True
+
 
 def update_chara_names(con, charaId, newCharaNames):
     customInteractions.update_names_on_chara(con, charaId, newCharaNames)

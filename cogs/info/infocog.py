@@ -247,6 +247,15 @@ class InfoCog(commands.Cog, name="GcInfo"):
     async def fixNames(self, ctx):
         if infocommands.fix_chara_names(self.con):
             await utils.send_embed(ctx, utils.successEmbed('Finished Fixing'))
+    
+    @commands.command(name="updatePic", pass_context=True, hidden=True)
+    @commands.is_owner()
+    async def update_pic(self, ctx,unitName):
+        chara = infocommands.characterSearch(self.con, unitName)[0]
+        if infocommands.update_bin_pic(self.con,chara):
+            await utils.send_embed(ctx,utils.successEmbed('Done'))
+
+        
 
     @commands.command(name="randomTeam", aliases=['rteam', 'ranteam'], brief='(numRerolls)', pass_context=True, description=descriptions.get('randomTeam'))
     @commands.cooldown(1, 10, commands.BucketType.user)

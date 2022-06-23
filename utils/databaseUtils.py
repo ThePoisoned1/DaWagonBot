@@ -88,6 +88,7 @@ def printTable(con, tableName: str):
 
 def customSQL(con,sql):
     cursor = con.cursor()
-    cursor.execute(sql,())
+    print(sql)
+    cursor.execute(sql)
     con.commit()
     return parseFetch(cursor)
