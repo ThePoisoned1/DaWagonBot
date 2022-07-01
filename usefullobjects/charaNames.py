@@ -32,6 +32,7 @@ unitNames = {
     'Estarossa': ['Estarossa'],
     'Fraudrin': ['Fraudrin'],
     'Freesia': ['Freesia'],
+    'Freyr':['Freyr'],
     'Galland': ['Galland'],
     'Gerharde': ['Gerharde'],
     'Gilthunder': ['Gilthunder'],
