@@ -212,6 +212,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
         msg = await utils.send_embed(ctx,utils.info_embed('Updating'))
         updateEmbed = customInteractions.run_chara_update(
             self.con, self.conf['database']['chara_base_url'])
+        infocommands.updateBuffer(self.con)
         await msg.edit(embed=updateEmbed)
     @commands.command(name="chadGearAdd", pass_context=True, hidden=True)
     @commands.is_owner()
@@ -319,6 +320,12 @@ class InfoCog(commands.Cog, name="GcInfo"):
             await utils.send_embed(ctx, utils.successEmbed('Gear Deleted'))
         else:
             await utils.send_cancel_msg(ctx)
+
+    @commands.command(name="refresh", pass_context=True, hidden=True)
+    @commands.is_owner()
+    async def refresh(self, ctx):
+            infocommands.updateBuffer(self.con)
+            await utils.send_embed(ctx, utils.successEmbed('Finished refreshing'))
 
     @commands.command(name="rollTournament", aliases=['rollT', 'rollTeams'], pass_context=True, description=descriptions.get('rollTournament'))
     @commands.check_any(commands.is_owner(), commands.has_any_role(*infocogconf.tournamentManagerRoles.values()))
