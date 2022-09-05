@@ -125,6 +125,12 @@ class FunCog(commands.Cog, name="Fun"):
             embed.set_footer(
                 text=f'{snipedMsg[0].author.name}#{snipedMsg[0].author.discriminator}', icon_url=snipedMsg[0].author.avatar.url)
         await utils.send_embed(ctx, embed)
+    
+    @ commands.command(name="hello", aliases=['hi'], brief="(user)", pass_context=True, description=descriptions.get("ppsize"))
+    async def hello(self, ctx, user: discord.Member = None):
+        if user == None:
+            user = ctx.message.author
+        await utils.send_msg(ctx, RandomCommands.hello(user))
 
 
 def setup(bot):
