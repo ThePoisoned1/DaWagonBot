@@ -14,7 +14,7 @@ class InfoCog(commands.Cog, name="GcInfo"):
     Info about characters and teams in 7DSGC
     """
 
-    def __init__(self, bot, con,conf):
+    def __init__(self, bot, con, conf):
         self.bot = bot
         self.con = con
         self.conf = conf
@@ -92,7 +92,8 @@ class InfoCog(commands.Cog, name="GcInfo"):
             if not msg or utils.cancelChecker(msg.content):
                 await utils.send_msg(ctx, msg='Operation canceled')
                 return
-            chara = infocommands.characterSearch(self.con, msg.content)
+            chara = infocommands.characterSearch(
+                self.con, msg.content[1:] if msg.content[0] == '-' else msg.content)
             if chara:
                 team = chara[0]
             else:
@@ -209,11 +210,12 @@ class InfoCog(commands.Cog, name="GcInfo"):
     @commands.command(name="update", pass_context=True, hidden=True)
     @commands.is_owner()
     async def update(self, ctx):
-        msg = await utils.send_embed(ctx,utils.info_embed('Updating'))
+        msg = await utils.send_embed(ctx, utils.info_embed('Updating'))
         updateEmbed = customInteractions.run_chara_update(
             self.con, self.conf['database']['chara_base_url'])
         infocommands.updateBuffer(self.con)
         await msg.edit(embed=updateEmbed)
+
     @commands.command(name="chadGearAdd", pass_context=True, hidden=True)
     @commands.is_owner()
     async def chadGearAdd(self, ctx, defaultGear):
@@ -248,15 +250,13 @@ class InfoCog(commands.Cog, name="GcInfo"):
     async def fixNames(self, ctx):
         if infocommands.fix_chara_names(self.con):
             await utils.send_embed(ctx, utils.successEmbed('Finished Fixing'))
-    
+
     @commands.command(name="updatePic", pass_context=True, hidden=True)
     @commands.is_owner()
-    async def update_pic(self, ctx,unitName):
+    async def update_pic(self, ctx, unitName):
         chara = infocommands.characterSearch(self.con, unitName)[0]
-        if infocommands.update_bin_pic(self.con,chara):
-            await utils.send_embed(ctx,utils.successEmbed('Done'))
-
-        
+        if infocommands.update_bin_pic(self.con, chara):
+            await utils.send_embed(ctx, utils.successEmbed('Done'))
 
     @commands.command(name="randomTeam", aliases=['rteam', 'ranteam'], brief='(numRerolls)', pass_context=True, description=descriptions.get('randomTeam'))
     @commands.cooldown(1, 10, commands.BucketType.user)
@@ -324,8 +324,8 @@ class InfoCog(commands.Cog, name="GcInfo"):
     @commands.command(name="refresh", pass_context=True, hidden=True)
     @commands.is_owner()
     async def refresh(self, ctx):
-            infocommands.updateBuffer(self.con)
-            await utils.send_embed(ctx, utils.successEmbed('Finished refreshing'))
+        infocommands.updateBuffer(self.con)
+        await utils.send_embed(ctx, utils.successEmbed('Finished refreshing'))
 
     @commands.command(name="rollTournament", aliases=['rollT', 'rollTeams'], pass_context=True, description=descriptions.get('rollTournament'))
     @commands.check_any(commands.is_owner(), commands.has_any_role(*infocogconf.tournamentManagerRoles.values()))

@@ -192,6 +192,8 @@ def fixes_cuz_db_kekega(chara:Character):
         chara.skills[0].isAoE=False
     elif chara.name == 'elizabeth_of_reincarnation1':
         chara.imageUrl='https://gcdatabase.com/images/characters/elizabeth_of_reincarnation/ssrl_portrait.png'
+    elif chara.name == 'slater2':
+        chara.names[0]= 'rSRSlater'
     return chara
 
 def get_atributes_order(data):
