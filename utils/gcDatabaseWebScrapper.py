@@ -74,6 +74,7 @@ def getSkillEffects(line, rawLine):
         r'Max HP of the hero by':'own HP',
         r'Ultimate Move damage': 'Ultimate Move damage',
         r'all stats': 'All stats',
+        r'basic stats': 'Basic Stats',
         r'Crit Resistance': 'Crit Resistance',
         r'Crit Defense': 'Crit Defense',
         r'damage dealt':'Damage dealt',

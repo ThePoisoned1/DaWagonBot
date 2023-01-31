@@ -34,6 +34,7 @@ unitNames = {
     'Filo': ['Filo'],
     'Fraudrin': ['Fraudrin'],
     'Freesia': ['Freesia'],
+    'Freya':['Freya'],
     'Freyr': ['Freyr'],
     'Galland': ['Galland'],
     'Gerharde': ['Gerharde'],
