@@ -66,6 +66,7 @@ unitNames = {
     'Mai': ['Mai'],
     'Marmas': ['Marmas'],
     'Matrona': ['Matrona'],
+    'Mael':['Mael'],
     'Megellda': ['Megellda'],
     'Melascula': ['Melascula'],
     'Meliodas': ['Meliodas'],
