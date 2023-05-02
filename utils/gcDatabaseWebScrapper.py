@@ -180,6 +180,7 @@ def get_chara_real_name(charaId):
     charaId = charaId.lower()
     for name, rejexes in charaNames.unitNames.items():
         if any(len(re.findall(rejex.lower(), charaId)) > 0 for rejex in rejexes):
+            print(name)
             return name
     print('PEPEGA', charaId)
 
