@@ -101,6 +101,7 @@ unitNames = {
     'Taizoo': ['Taizoo'],
     'Tarmiel': ['Tarmiel'],
     'Terry': ['Terry'],
+    'Tristan': ['Tristan'],
     'Twigo': ['Twigo'],
     'Thonar': ['Thonar'],
     'Valenti': ['Valenti'],
