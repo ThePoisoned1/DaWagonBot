@@ -104,6 +104,7 @@ unitNames = {
     'Tristan': ['Tristan'],
     'Twigo': ['Twigo'],
     'Thonar': ['Thonar'],
+    'Tyr':['Tyr'],
     'Valenti': ['Valenti'],
     'Vivian': ['Vivian'],
     'Waillo': ['Waillo'],
