@@ -14,6 +14,7 @@ unitNames = {
     'Cusack': ['Cusack'],
     'Deathpierce': ['Deathpierce'],
     'Deldry': ['Deldry'],
+    'Demon King':['Demon_king'],
     'Denzel': ['Denzel'],
     'Derieri': ['Derieri'],
     'Diane': ['Diane'],
@@ -59,7 +60,7 @@ unitNames = {
     'Jillian': ['Jillian'],
     'Jim': ['Jim'],
     'Jude': ['Jude'],
-    'King': ['King'],
+    'King': ['(?!demon_)king\w*'],
     'Kizuna':['Kizuna'],
     'Kyo': ['Kyo'],
     'Levi': ['Levi'],
@@ -118,7 +119,9 @@ unitNames = {
 incompatibilities = [
     ['Fraudrin', 'Dreyfus'],
     ['ElizabethHawk', 'Elizabeth', 'Liz'],
-    ['ElizabethHawk', 'Hawk']
+    ['ElizabethHawk', 'Hawk'],
+    ['Mael','Estarossa'],
+    ['Zeldris','Demon King']
 ]
 
 attributeColors = {
