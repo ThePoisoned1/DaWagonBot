@@ -202,9 +202,18 @@ def get_atributes_order(data):
     attrs = [x.text for x in data.find_all("h2", class_="whitetext")]
     out = []
     for att in attrs:
-        if any(att == aux for aux in ['Commandment','Grace','Holy Relic']) and att not in out:
+        if any(att == aux for aux in ['Commandment','Grace','Holy Relic','Bind']) and att not in out:
             out.append(att)
     return out
+
+def skips(page:BeautifulSoup,pos):
+    skiped_table_headers = {'Associated with':1,'Misc. Info':4}
+    for header in page.find_all("h2", class_="whitetext"):
+        if header.text == 'Skills': ##we reached destination
+            break
+        if header.text in skiped_table_headers:
+            pos += skiped_table_headers[header.text]
+    return pos
 
 def getCharaDataFromUrl(url):
     baseUrl = '/'.join(url.split('/')[:3])
@@ -234,8 +243,7 @@ def getCharaDataFromUrl(url):
     chara.names.append(fName)
     # skill effects
     pos += 1
-    if any(header.text == 'Associated with' for header in page.find_all("h2", class_="whitetext")):
-        pos += 1
+    pos = skips(page,pos)
     chara.skills, pos = get_skills_ult(result, pos)
     # Transforming unit
     pos += 1
@@ -267,6 +275,8 @@ def getCharaDataFromUrl(url):
         # holy relic
         elif att =='Holy Relic':
             chara.relic = result[pos].find_all('td')[1].text
+            pos+=1
+        elif att == 'Bind':
             pos+=1
     chara.charaUrl = url
     chara = fixes_cuz_db_kekega(chara)
