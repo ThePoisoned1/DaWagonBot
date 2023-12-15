@@ -1,7 +1,7 @@
 #python -m venv
-py-cord[voice]
-py-cord[speed]
+py-cord
 opencv-python
 Pillow
 bs4
 requests
+opencv-python

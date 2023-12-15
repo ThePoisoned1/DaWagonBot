@@ -274,7 +274,8 @@ def getCharaDataFromUrl(url):
             pos+=1
         # holy relic
         elif att =='Holy Relic':
-            chara.relic = result[pos].find_all('td')[1].text
+            aux = result[pos].find_all('td')
+            chara.relic = aux[1].text if len(aux)>1 else aux[0].text
             pos+=1
         elif att == 'Bind':
             pos+=1
