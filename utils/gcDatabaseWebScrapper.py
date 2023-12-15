@@ -235,6 +235,26 @@ def getTransformationKey(tables):
     for k in tKeys:
         if k in tables:
             return k
+        
+def getCharaSkills(tables):
+    skills = []
+    skillLabels = ['Skills','SSR Skills','LR Skills']
+    for label in skillLabels:
+        if label in tables:
+            skills+=get_skills_ult(tables[label])
+    return skills
+
+
+def getCharaPassives(tables):
+    passiveLabels = ['Passive/Unique','SSR Passive','LR Passive','Passive/Unique (Titan Form)','Passive/Unique (Post-Transformation)']
+    passives = []
+    for label in passiveLabels:
+        if label in tables:
+            passives.append(parseText(tables[label].find_next('td').text))
+    return '\n------------------\n'.join(passives)
+
+def parseText(txt:str):
+    return txt.replace("\n","").replace("\t","")
 
 def getCharaDataFromUrl(url):
     baseUrl = '/'.join(url.split('/')[:3])
@@ -263,21 +283,15 @@ def getCharaDataFromUrl(url):
     # skill effects
     #pos += 1
     #pos = skips(page,pos)
-    chara.skills = get_skills_ult(tables['Skills'])
+    chara.skills = getCharaSkills(tables)
     # pasive
-    pasiveData = tables['Passive/Unique'].find_all('td')
-    chara.passive = pasiveData[0].text
-    transformKey = getTransformationKey(tables)
-    if transformKey:
-        pasiveData = tables[transformKey].find_all('td')
-        chara.passive += '\n------------------\n'
-        chara.passive += pasiveData[0].text
+    chara.passive = getCharaPassives(tables)
     if 'Commandment' in tables:
-        chara.commandment = tables['Commandment'].find_all('td')[0].text
+        chara.commandment = parseText(tables['Commandment'].find_next('td').text)
     if 'Grace' in tables:
-        chara.grace = tables['Grace'].find_all('td')[0].text
+        chara.grace = parseText(tables['Grace'].find_next('td').text)
     if 'Holy Relic' in tables:
-        chara.relic = tables['Holy Relic'].find_all('td')[0].text
+        chara.relic = parseText(tables['Holy Relic'].find_all('td')[-1].text)
     if 'Bind' in tables:
         pass
     chara.charaUrl = url
