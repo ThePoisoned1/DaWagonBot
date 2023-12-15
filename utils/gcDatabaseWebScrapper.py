@@ -174,8 +174,8 @@ def get_skills_ult(tables):
     charaSkill.skillType = 'Ultimate'
     charaSkill.increasesDecresases = incOrDec(ultData[1].text)
     skills.append(charaSkill)
-    if len(tables)>3:
-        skills+=tables[3:]
+    if len(tables)>=6:
+        skills+=get_skills_ult(tables[3:])
     return skills
 
 
@@ -226,8 +226,9 @@ def getTables(page:BeautifulSoup):
         if table:
             tables[header.text]=table.find_all(
         'table', class_='table table-dark table-striped table-bordered')
-            if len(tables[header.text]) ==1:
-                tables[header.text]=tables[header.text][0]
+            #fk u make the web properly
+            if header.text == 'Passive/Unique'  and page.find('img').get('src').endswith('/elizabeth/ssrr_portrait.webp'):
+                tables[header.text].append(table.findNextSibling().find_next('table', class_='table table-dark table-striped table-bordered'))
     return tables
 
 def getTransformationKey(tables):
@@ -250,11 +251,14 @@ def getCharaPassives(tables):
     passives = []
     for label in passiveLabels:
         if label in tables:
-            passives.append(parseText(tables[label].find_next('td').text))
+            passives.extend([parseText(n.find_next('td').text)for n in tables[label]])
+    #some weird ass charas have lr/transform shit different fk u
+    if 'Skills' in tables and len(tables['Skills'])%3 != 0:
+        passives.append(parseText(tables['Skills'][-1].find_next('td').text))
     return '\n------------------\n'.join(passives)
 
 def parseText(txt:str):
-    return txt.replace("\n","").replace("\t","")
+    return txt.replace("\n"," ").replace("\t","").replace("\r",'')
 
 def getCharaDataFromUrl(url):
     baseUrl = '/'.join(url.split('/')[:3])
@@ -264,18 +268,17 @@ def getCharaDataFromUrl(url):
     # name
     chara.name = ''.join(url.split('/')[-2:])
     chara.realName = get_chara_real_name(chara.name)
-    result = page.find_all("div", class_="pt-3")
-    name = result[0]
-    chara.customName = name.find('h5', class_='whitetext').text
-    chara.unitName = name.find('h4', class_='whitetext').text
+    pic_name = page.find("div", class_="row")
+    chara.customName = pic_name.find('h5', class_='whitetext').text
+    chara.unitName = pic_name.find('h4', class_='whitetext').text
     # rarity, attribute, race
     tables = getTables(page)
-    data = tables['Basic Info'].find_all('td')
+    data = tables['Basic Info'][0].find_all('td')
     chara.rarity = getInfoFromHtmlLine(data[1].img, rarities)[0]
     chara.attribute = getInfoFromHtmlLine(data[3].img, attributes)[0]
     chara.race = getInfoFromHtmlLine(data[5].img, races)
     chara.imageUrl = baseUrl + '/' + \
-        page.find_all('img')[0].get('src').replace('../', '')
+        pic_name.find_all('img')[-1].get('src').replace('../', '')
     # first name
     color = charaNames.attributeColors[chara.attribute]
     fName = utils.camel_case(f'{color[0].lower()} {chara.name[:-1]}')
@@ -287,11 +290,11 @@ def getCharaDataFromUrl(url):
     # pasive
     chara.passive = getCharaPassives(tables)
     if 'Commandment' in tables:
-        chara.commandment = parseText(tables['Commandment'].find_next('td').text)
+        chara.commandment = parseText(tables['Commandment'][0].find_next('td').text)
     if 'Grace' in tables:
-        chara.grace = parseText(tables['Grace'].find_next('td').text)
+        chara.grace = parseText(tables['Grace'][0].find_next('td').text)
     if 'Holy Relic' in tables:
-        chara.relic = parseText(tables['Holy Relic'].find_all('td')[-1].text)
+        chara.relic = parseText(tables['Holy Relic'][0].find_all('td')[-1].text)
     if 'Bind' in tables:
         pass
     chara.charaUrl = url
