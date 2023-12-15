@@ -151,9 +151,9 @@ def checkForSrSsr(allcharas):
     return out
 
 
-def get_skills_ult(result, pos):
+def get_skills_ult(tables):
     skills = []
-    for skill in result[pos:pos+2]:
+    for skill in tables[:2]:
         skillData = skill.find_all('td')
         charaSkill = Skill()
         charaSkill.effects = getSkillEffects(
@@ -162,9 +162,9 @@ def get_skills_ult(result, pos):
         charaSkill.skillType = skillData[8].text
         charaSkill.increasesDecresases = incOrDec(skillData[7].text)
         skills.append(charaSkill)
-    pos += 2
+
     # ultimate
-    ultData = result[pos].find_all('td')
+    ultData = tables[2].find_all('td')
     charaSkill = Skill()
     charaSkill.effects = getSkillEffects(str(ultData[1]), ultData[1].text)
     if len(ultData) > 2:
@@ -173,7 +173,9 @@ def get_skills_ult(result, pos):
     charaSkill.skillType = 'Ultimate'
     charaSkill.increasesDecresases = incOrDec(ultData[1].text)
     skills.append(charaSkill)
-    return skills, pos
+    if len(tables)>3:
+        skills+=tables[3:]
+    return skills
 
 
 def get_chara_real_name(charaId):
@@ -215,6 +217,24 @@ def skips(page:BeautifulSoup,pos):
             pos += skiped_table_headers[header.text]
     return pos
 
+def getTables(page:BeautifulSoup):
+    headers = page.find_all("h2", class_="whitetext")
+    tables = {}
+    for header in headers:
+        table = header.find_next('div')
+        if table:
+            tables[header.text]=table.find_all(
+        'table', class_='table table-dark table-striped table-bordered')
+            if len(tables[header.text]) ==1:
+                tables[header.text]=tables[header.text][0]
+    return tables
+
+def getTransformationKey(tables):
+    tKeys = ['Passive/Unique (Titan Form)','Passive/Unique (Post-Transformation)']
+    for k in tKeys:
+        if k in tables:
+            return k
+
 def getCharaDataFromUrl(url):
     baseUrl = '/'.join(url.split('/')[:3])
     page = getHTMLFromUrl(url)
@@ -227,11 +247,9 @@ def getCharaDataFromUrl(url):
     name = result[0]
     chara.customName = name.find('h5', class_='whitetext').text
     chara.unitName = name.find('h4', class_='whitetext').text
-    pos = 0
     # rarity, attribute, race
-    result = page.find_all(
-        'table', class_='table table-dark table-striped table-bordered')
-    data = result[pos].find_all('td')
+    tables = getTables(page)
+    data = tables['Basic Info'].find_all('td')
     chara.rarity = getInfoFromHtmlLine(data[1].img, rarities)[0]
     chara.attribute = getInfoFromHtmlLine(data[3].img, attributes)[0]
     chara.race = getInfoFromHtmlLine(data[5].img, races)
@@ -242,43 +260,25 @@ def getCharaDataFromUrl(url):
     fName = utils.camel_case(f'{color[0].lower()} {chara.name[:-1]}')
     chara.names.append(fName)
     # skill effects
-    pos += 1
-    pos = skips(page,pos)
-    chara.skills, pos = get_skills_ult(result, pos)
-    # Transforming unit
-    pos += 1
-    transforming = False
-    if 'Transforms' in chara.skills[-1].effects:
-        transforming = True
-        moreSkills, pos = get_skills_ult(result, pos)
-        chara.skills += moreSkills
-        pos += 1
+    #pos += 1
+    #pos = skips(page,pos)
+    chara.skills = get_skills_ult(tables['Skills'])
     # pasive
-    pasiveData = result[pos].find_all('td')
+    pasiveData = tables['Passive/Unique'].find_all('td')
     chara.passive = pasiveData[0].text
-    pos += 1
-    if transforming:
-        pasiveData = result[pos].find_all('td')
+    transformKey = getTransformationKey(tables)
+    if transformKey:
+        pasiveData = tables[transformKey].find_all('td')
         chara.passive += '\n------------------\n'
         chara.passive += pasiveData[0].text
-        pos += 1
-    atts = get_atributes_order(page)
-    for att in atts:
-        # commandment
-        if att == 'Commandment':
-            chara.commandment = result[pos].find_all('td')[0].text
-            pos+=1
-        # grace
-        elif att == 'Grace':
-            chara.grace = result[pos].find_all('td')[0].text
-            pos+=1
-        # holy relic
-        elif att =='Holy Relic':
-            aux = result[pos].find_all('td')
-            chara.relic = aux[1].text if len(aux)>1 else aux[0].text
-            pos+=1
-        elif att == 'Bind':
-            pos+=1
+    if 'Commandment' in tables:
+        chara.commandment = tables['Commandment'].find_all('td')[0].text
+    if 'Grace' in tables:
+        chara.grace = tables['Grace'].find_all('td')[0].text
+    if 'Holy Relic' in tables:
+        chara.relic = tables['Holy Relic'].find_all('td')[0].text
+    if 'Bind' in tables:
+        pass
     chara.charaUrl = url
     chara = fixes_cuz_db_kekega(chara)
     chara.binImg = utils.downloadImgFromUrl(chara.imageUrl)    
