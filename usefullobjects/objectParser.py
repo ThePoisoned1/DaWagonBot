@@ -22,7 +22,10 @@ def dbCharaToObj(dbChara):
             chara.gear.append(gear)
     chara.imageUrl = dbChara[8]
     skills = dbChara[9].split('|')
-    chara.skills = [Skill.skillFromDictStr(skill) for skill in skills]
+    try:
+        chara.skills = [Skill.skillFromDictStr(skill) for skill in skills]
+    except Exception:
+        chara.skills = []
     chara.passive = dbChara[10]
     chara.commandment = dbChara[11]
     chara.grace = dbChara[12]
