@@ -9,6 +9,7 @@ import cv2
 
 
 rarities = {
+    'rarity_lr':'LR',
     'rarity_ssr': 'SSR',
     'rarity_sr': 'SR',
     'rarity_r': 'R'
