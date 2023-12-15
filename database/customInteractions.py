@@ -114,12 +114,7 @@ def get_update_charas_list(oldCharas, updateCharas):
     return toUpdate, updateDict
 
 def run_chara_update(con, baseUrl):
-    #charaUrls = gcDatabaseWebScrapper.getCharaUrls(baseUrl+'/characters')
-    charaUrls = [
-        #'characters/camila/1','characters/camila/2','characters/elizabeth/4','characters/eren/2',
-        'characters/escanor/1'
-        #,'characters/lostvayne_meliodas/1'
-        ]
+    charaUrls = gcDatabaseWebScrapper.getCharaUrls(baseUrl+'/characters')
     charas = [gcDatabaseWebScrapper.getCharaDataFromUrl(
         f'{baseUrl}/{charaUrl}') for charaUrl in charaUrls]
     charas = gcDatabaseWebScrapper.checkForSrSsr(charas)
