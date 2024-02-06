@@ -51,6 +51,7 @@ unitNames = {
     'Griamore': ['Griamore'],
     'Guila': ['Guila'],
     'Gustaf': ['Gustaf'],
+    'Ha Yuri Zahard':['ha_yuri_zahard'],
     'Hawk': ['Hawk', 'Hawkslo'],
     'Hel':['Hel\d'],
     'Helbram': ['Helbram'],
@@ -64,6 +65,7 @@ unitNames = {
     'Jillian': ['Jillian'],
     'Jim': ['Jim'],
     'Jude': ['Jude'],
+    'Jyu Viole Grace':['jyu_viole_grace'],
     'King': ['(?!demon_)king\w*'],
     'Kizuna':['Kizuna'],
     'Kyo': ['Kyo'],
@@ -117,6 +119,7 @@ unitNames = {
     'Weinheidt': ['Weinheidt'],
     'Will': ['Will'],
     'Iori Yagami': ['Yagami'],
+    'Zahard (Data)':['zahard_data'],
     'Zaneri': ['Zaneri'],
     'Zaratras': ['Zaratras'],
     'Zeldris': ['Zeldris']
