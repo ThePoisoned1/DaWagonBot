@@ -42,6 +42,7 @@ unitNames = {
     'Freya':['Freya'],
     'Freyr': ['Freyr'],
     'Galland': ['Galland'],
+    'Gelda':['Gelda'],
     'Gerharde': ['Gerharde'],
     'Ghislaine':['Ghislaine'],
     'Gilthunder': ['Gilthunder'],
