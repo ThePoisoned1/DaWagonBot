@@ -101,6 +101,7 @@ unitNames = {
     'Rudeus':['Rudeus'],
     'Rugal': ['Rugal'],
     'Ruin': ['Ruin'],
+    'Sabunak':['sabunak'],
     'Sariel': ['Sariel'],
     'Shalltear': ['Shalltear'],
     'Shin': ['Shin'],
