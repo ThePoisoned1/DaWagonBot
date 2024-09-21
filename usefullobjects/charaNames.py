@@ -139,7 +139,8 @@ incompatibilities = [
     ['ElizabethHawk', 'Elizabeth', 'Liz'],
     ['ElizabethHawk', 'Hawk'],
     ['Mael','Estarossa'],
-    ['Zeldris','Demon King']
+    ['Thor','Thonar'],
+    ['Zeldris','Demon King'],
 ]
 
 attributeColors = {
